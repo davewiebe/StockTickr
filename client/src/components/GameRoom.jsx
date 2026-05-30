@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { socket } from '../socket';
-import TradePanel from './TradePanel';
 import Leaderboard from './Leaderboard';
 import PriceBoard from './PriceBoard';
 import MarketTrade from './MarketTrade';
+import Portfolio from './Portfolio';
 import RollFeed from './RollFeed';
 import './GameRoom.css';
 
 export default function GameRoom({ room, me, countdown, onLeave }) {
-  const [activeTab, setActiveTab] = useState('market'); // 'market' | 'trade' | 'scores'
+  const [activeTab, setActiveTab] = useState('market'); // 'market' | 'history' | 'scores'
   const [selectedStock, setSelectedStock] = useState(null);
 
   const showCountdown = countdown !== null && countdown !== undefined;
@@ -34,7 +34,7 @@ export default function GameRoom({ room, me, countdown, onLeave }) {
       </header>
 
       <div className="game-tabs">
-        {['market', 'trade', 'scores'].map(t => (
+        {['market', 'history', 'scores'].map(t => (
           <button
             key={t}
             className={`game-tab${activeTab === t ? ' active' : ''}`}
@@ -50,11 +50,11 @@ export default function GameRoom({ room, me, countdown, onLeave }) {
           <>
             <PriceBoard prices={room.prices} selected={selectedStock} onSelect={setSelectedStock} />
             <MarketTrade room={room} me={me} selected={selectedStock} />
-            <RollFeed history={room.history || []} />
+            <Portfolio room={room} me={me} />
           </>
         )}
-        {activeTab === 'trade' && (
-          <TradePanel room={room} me={me} />
+        {activeTab === 'history' && (
+          <RollFeed history={room.history || []} />
         )}
         {activeTab === 'scores' && (
           <Leaderboard players={room.players} myId={socket.id} />

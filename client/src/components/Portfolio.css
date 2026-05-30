@@ -1,0 +1,15 @@
+.portfolio-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+.portfolio-row:last-child { border-bottom: none; }
+
+.portfolio-sym { font-weight: 800; min-width: 3rem; letter-spacing: 0.04em; }
+.portfolio-qty { flex: 1; color: var(--muted); }
+.portfolio-val { font-weight: 700; }
+
+.portfolio-empty { color: var(--muted); font-size: 0.875rem; margin-top: 0.5rem; }
