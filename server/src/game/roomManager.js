@@ -28,6 +28,68 @@ function bankruptStock(room, symbol) {
   return PAR_PRICE;
 }
 
+// A trade counts as "big" (worth a callout) at or above this dollar value.
+const BIG_TRADE_VALUE = 2000;
+
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+// Witty one-liner for the player most affected by the latest roll.
+function buildRollCallout(room, before, event) {
+  let best = null, worst = null;
+  for (const p of room.players.values()) {
+    const delta = p.netWorth - (before[p.socketId] ?? p.netWorth);
+    if (delta > 0 && (!best || delta > best.delta)) best = { name: p.name, delta };
+    if (delta < 0 && (!worst || delta < worst.delta)) worst = { name: p.name, delta };
+  }
+  const sym = event.stockSymbol;
+
+  if (event.bankrupt && worst) {
+    return pick([
+      `💀 ${worst.name} got wiped out — ${sym} went bankrupt!`,
+      `🪦 ${sym} flatlined and took $${Math.abs(worst.delta).toLocaleString()} of ${worst.name}'s fortune with it.`,
+      `🔥 ${worst.name} held the bag as ${sym} imploded. Brutal.`,
+    ]);
+  }
+  if (best) {
+    const amt = Math.round(best.delta).toLocaleString();
+    return pick([
+      `🤑 ${best.name} just made $${amt} — ${sym} to the moon!`,
+      `📈 ${best.name} is printing money: +$${amt} on ${sym}!`,
+      `🥂 ${best.name} pockets $${amt}. The ${sym} gods are pleased.`,
+      `🚀 Cha-ching! ${best.name} rides ${sym} for +$${amt}.`,
+    ]);
+  }
+  if (worst) {
+    const amt = Math.abs(Math.round(worst.delta)).toLocaleString();
+    return pick([
+      `📉 ${worst.name} dropped $${amt} as ${sym} cratered. Oof.`,
+      `🩸 Ouch — ${worst.name} lost $${amt} on ${sym}.`,
+      `🫠 ${worst.name} watched $${amt} evaporate. ${sym}, why?`,
+      `🐻 ${sym} mauled ${worst.name} for $${amt}.`,
+    ]);
+  }
+  return null; // nobody held the rolled stock
+}
+
+// Witty one-liner for a big buy/sell. Returns null if the trade is too small.
+function buildTradeCallout(name, side, symbol, shares, value) {
+  if (value < BIG_TRADE_VALUE) return null;
+  if (side === 'buy') {
+    return pick([
+      `🛒 ${name} backed up the truck: ${shares} ${symbol}!`,
+      `🐂 ${name} is feeling bullish — grabbed ${shares} ${symbol}.`,
+      `🤞 ${name} bet big on ${symbol} (${shares} shares). Bold.`,
+      `💸 ${name} went all-in: ${shares} ${symbol} for $${value.toLocaleString()}.`,
+    ]);
+  }
+  return pick([
+    `💰 ${name} cashed out ${shares} ${symbol} for $${value.toLocaleString()}.`,
+    `🏃 ${name} bailed on ${shares} ${symbol}!`,
+    `🐻 ${name} dumped ${shares} ${symbol}. Paper hands?`,
+    `🤝 ${name} took profits: ${shares} ${symbol} sold.`,
+  ]);
+}
+
 // rooms: Map<roomCode, RoomState>
 const rooms = new Map();
 
@@ -163,6 +225,10 @@ function startGame(code, requestingSocketId) {
 
 // Apply a dice roll to room state. Returns the roll event to broadcast.
 function applyRoll(room) {
+  // Snapshot net worth before the roll so we can call out who gained/lost most.
+  const beforeNetWorth = {};
+  for (const p of room.players.values()) beforeNetWorth[p.socketId] = p.netWorth;
+
   const { stockSymbol, action } = rollDice();
   const currentPrice = room.prices[stockSymbol];
   let newPrice = currentPrice;
@@ -203,6 +269,8 @@ function applyRoll(room) {
       return sum + player.portfolio[s.symbol] * room.prices[s.symbol];
     }, 0);
   }
+
+  event.callout = buildRollCallout(room, beforeNetWorth, event);
 
   room.history = [event, ...room.history].slice(0, 20);
   return event;
@@ -364,6 +432,7 @@ module.exports = {
   buyStock,
   sellStock,
   applyRoll,
+  buildTradeCallout,
   startCountdown,
   startTicker,
   stopTicker,

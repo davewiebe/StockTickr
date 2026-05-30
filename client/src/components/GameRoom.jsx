@@ -5,10 +5,11 @@ import MarketPanel from './MarketPanel';
 import Portfolio from './Portfolio';
 import RollFeed from './RollFeed';
 import LastRoll from './LastRoll';
+import Callout from './Callout';
 import GameOver from './GameOver';
 import './GameRoom.css';
 
-export default function GameRoom({ room, me, countdown, preRoll, endsAt, result, onLeave }) {
+export default function GameRoom({ room, me, countdown, preRoll, endsAt, result, callout, onLeave }) {
   const [activeTab, setActiveTab] = useState('market'); // 'market' | 'history' | 'scores'
 
   const showCountdown = countdown !== null && countdown !== undefined;
@@ -42,6 +43,7 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
       )}
 
       <LastRoll roll={room.history?.[0]} />
+      <Callout callout={callout} />
 
       <div className="game-tabs">
         {['market', 'history', 'scores'].map(t => (

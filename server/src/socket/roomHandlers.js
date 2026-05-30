@@ -6,10 +6,19 @@ const {
   startGame,
   buyStock,
   sellStock,
+  buildTradeCallout,
+  getRoom,
   startCountdown,
   serializeRoom,
   serializePlayers,
 } = require('../game/roomManager');
+
+// Broadcast a witty callout for a big trade, if it qualifies.
+function emitTradeCallout(io, roomCode, player, side, symbol, shares, prices) {
+  const value = (prices[symbol] || 0) * shares;
+  const text = buildTradeCallout(player.name, side, symbol, shares, value);
+  if (text) io.to(roomCode).emit('game:callout', { text });
+}
 
 module.exports = function registerRoomHandlers(io, socket) {
   // Create a new room and join it as host
@@ -73,11 +82,11 @@ module.exports = function registerRoomHandlers(io, socket) {
     callback({ ok: true, player: result.player, prices: result.prices });
 
     // Broadcast updated leaderboard to room
-    const { serializePlayers, getRoom } = require('../game/roomManager');
     const room = getRoom(roomCode);
     if (room) {
       io.to(roomCode).emit('room:playersUpdated', { players: serializePlayers(room) });
     }
+    emitTradeCallout(io, roomCode, result.player, 'buy', symbol, Number(shares), result.prices);
   });
 
   // Sell shares
@@ -87,11 +96,11 @@ module.exports = function registerRoomHandlers(io, socket) {
 
     callback({ ok: true, player: result.player, prices: result.prices });
 
-    const { serializePlayers, getRoom } = require('../game/roomManager');
     const room = getRoom(roomCode);
     if (room) {
       io.to(roomCode).emit('room:playersUpdated', { players: serializePlayers(room) });
     }
+    emitTradeCallout(io, roomCode, result.player, 'sell', symbol, Number(shares), result.prices);
   });
 
   // Handle disconnect / explicit leave
