@@ -16,6 +16,20 @@
   border-radius: var(--radius);
   padding: 0.75rem 0.5rem;
   gap: 0.15rem;
+  /* reset button defaults so the cell still looks like a tile */
+  font: inherit;
+  color: var(--text);
+  width: 100%;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+
+.price-cell.selectable { cursor: pointer; }
+
+.price-cell.selectable:hover { transform: translateY(-1px); }
+
+.price-cell.selected {
+  background: color-mix(in srgb, var(--stock-color) 18%, var(--bg));
+  box-shadow: 0 0 0 2px var(--stock-color);
 }
 
 .price-emoji { font-size: 1.4rem; line-height: 1; }
