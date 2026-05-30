@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(node --check index.js)",
+      "Bash(node --check src/socket/index.js)",
+      "Bash(node --check src/socket/roomHandlers.js)",
+      "Bash(node --check src/game/roomManager.js)"
+    ]
+  }
+}

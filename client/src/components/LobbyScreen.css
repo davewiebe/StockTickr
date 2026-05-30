@@ -1,0 +1,65 @@
+.lobby-root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  gap: 1.5rem;
+}
+
+.lobby-header { text-align: center; }
+
+.lobby-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, #6366f1, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lobby-sub { color: var(--muted); margin-top: 0.4rem; font-size: 0.95rem; }
+
+.lobby-card { width: 100%; max-width: 420px; }
+
+.lobby-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+}
+.tab-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.lobby-form { display: flex; flex-direction: column; }
+
+.field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.code-input {
+  letter-spacing: 0.3em;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.lobby-footer { color: var(--muted); font-size: 0.8rem; }
