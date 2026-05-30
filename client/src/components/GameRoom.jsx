@@ -6,6 +6,7 @@ import Portfolio from './Portfolio';
 import RollFeed from './RollFeed';
 import LastRoll from './LastRoll';
 import Callout from './Callout';
+import TradeToasts from './TradeToasts';
 import GameOver from './GameOver';
 import './GameRoom.css';
 
@@ -73,6 +74,7 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
       </div>
 
       {result && <GameOver result={result} myId={socket.id} onLeave={onLeave} />}
+      <TradeToasts />
     </div>
   );
 }
