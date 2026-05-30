@@ -12,7 +12,8 @@ Real-time multiplayer Stock Ticker game. Single Render service: Express serves t
 - Phases: `lobby` → `countdown` (3s) → `playing` (15s frozen pre-roll, then dice tick) → `ended`.
 - Host settings (lobby only, clamped): `durationMinutes` 1–60 (default 5), `rollIntervalSeconds` 1–60 (default 5). Game auto-ends after duration → `game:ended` with sorted standings + winner.
 - 6 stocks: GOLD SILV OIL BOND INDU GRAIN. 18-face action die: per magnitude (5/10/20) = 3 up, 2 down, 1 dividend. No splits/bankrupt face. Stock hitting $0 → shares wiped, resets to par $100.
-- Socket events: `room:create|join|leave|start|updateSettings`, `trade:buy|sell`, server→client `game:started|countdown|open|preroll|rolling|tick|ended`, `room:player*|settingsUpdated`.
+- Socket events: `room:create|join|leave|start|updateSettings`, `trade:buy|sell`, server→client `game:started|countdown|open|preroll|rolling|tick|ended|callout`, `room:player*|settingsUpdated`.
+- Witty callouts: each roll's `rollEvent.callout` names the biggest gainer/loser; big trades (≥ $2000) emit `game:callout`. Client shows the latest on a line under LastRoll.
 
 ## Workflow (follow without re-asking)
 - Branch → commit → push → `gh pr create` → merge. Never commit to `main` directly. Don't stage `.claude/settings.local.json` or `package-lock.json` churn.

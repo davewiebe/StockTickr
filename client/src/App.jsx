@@ -12,6 +12,7 @@ export default function App() {
   const [preRoll, setPreRoll] = useState(null);     // seconds until dice start, or null
   const [endsAt, setEndsAt] = useState(null);       // epoch ms the game ends, or null
   const [result, setResult] = useState(null);       // { standings, winner } when game ends
+  const [callout, setCallout] = useState(null);     // { text, id } latest witty callout
 
   useEffect(() => {
     connectSocket();
@@ -70,6 +71,11 @@ export default function App() {
         if (!prev) return prev;
         return players.find(p => p.socketId === socket.id) || prev;
       });
+      if (rollEvent?.callout) setCallout({ text: rollEvent.callout, id: Date.now() });
+    });
+
+    socket.on('game:callout', ({ text }) => {
+      if (text) setCallout({ text, id: Date.now() });
     });
 
     return () => disconnectSocket();
@@ -90,6 +96,7 @@ export default function App() {
     setPreRoll(null);
     setEndsAt(null);
     setResult(null);
+    setCallout(null);
     setScreen('lobby');
   }
 
@@ -99,7 +106,7 @@ export default function App() {
     <GameRoom
       room={room} me={me}
       countdown={countdown} preRoll={preRoll}
-      endsAt={endsAt} result={result}
+      endsAt={endsAt} result={result} callout={callout}
       onLeave={handleLeave}
     />
   );
