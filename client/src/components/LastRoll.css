@@ -1,0 +1,28 @@
+.last-roll {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.last-roll.pos { border-left-color: var(--green); }
+.last-roll.neg { border-left-color: var(--red); }
+.last-roll.empty { color: var(--muted); justify-content: center; border-left-color: transparent; }
+
+.lr-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.lr-emoji { font-size: 1rem; line-height: 1; }
+.lr-sym   { font-weight: 800; letter-spacing: 0.04em; }
+.lr-action { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.lr-price { font-weight: 700; color: var(--muted); }

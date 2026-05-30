@@ -5,6 +5,7 @@ import PriceBoard from './PriceBoard';
 import MarketTrade from './MarketTrade';
 import Portfolio from './Portfolio';
 import RollFeed from './RollFeed';
+import LastRoll from './LastRoll';
 import './GameRoom.css';
 
 export default function GameRoom({ room, me, countdown, preRoll, onLeave }) {
@@ -39,6 +40,8 @@ export default function GameRoom({ room, me, countdown, preRoll, onLeave }) {
           🟢 Trading open — buy in now! Stocks start moving in <strong>{preRoll}s</strong>
         </div>
       )}
+
+      <LastRoll roll={room.history?.[0]} />
 
       <div className="game-tabs">
         {['market', 'history', 'scores'].map(t => (
