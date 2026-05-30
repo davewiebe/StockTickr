@@ -1,6 +1,7 @@
 const { rollDice, createInitialPrices, STOCKS } = require('./stocks');
 
 const STARTING_CASH = 5000;
+const MAX_PLAYERS = 32;
 const COUNTDOWN_SECONDS = 3;   // delay before the market opens for trading
 const PRE_ROLL_SECONDS = 15;   // open-but-frozen window for initial buys before dice start
 const MAX_PRICE = 200;
@@ -103,7 +104,7 @@ function joinRoom(code, socketId, playerName) {
   if (!room) return { error: 'Room not found' };
   if (room.phase !== 'lobby') return { error: 'Game already in progress' };
   if (room.players.has(socketId)) return { error: 'Already in room' };
-  if (room.players.size >= 6) return { error: 'Room is full' };
+  if (room.players.size >= MAX_PLAYERS) return { error: 'Room is full' };
 
   const player = createPlayer(socketId, playerName, false);
   room.players.set(socketId, player);
