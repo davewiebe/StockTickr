@@ -10,6 +10,8 @@ export default function App() {
   const [me, setMe] = useState(null);
   const [countdown, setCountdown] = useState(null); // seconds until market opens, or null
   const [preRoll, setPreRoll] = useState(null);     // seconds until dice start, or null
+  const [endsAt, setEndsAt] = useState(null);       // epoch ms the game ends, or null
+  const [result, setResult] = useState(null);       // { standings, winner } when game ends
 
   useEffect(() => {
     connectSocket();
@@ -32,8 +34,18 @@ export default function App() {
       setPreRoll(remaining);
     });
 
-    socket.on('game:rolling', () => {
+    socket.on('game:rolling', ({ endsAt }) => {
       setPreRoll(null);
+      setEndsAt(endsAt ?? null);
+    });
+
+    socket.on('room:settingsUpdated', ({ settings }) => {
+      setRoom(prev => prev ? { ...prev, settings } : prev);
+    });
+
+    socket.on('game:ended', ({ standings, winner }) => {
+      setResult({ standings, winner });
+      setEndsAt(null);
     });
 
     socket.on('room:playerJoined', ({ players }) => {
@@ -76,10 +88,19 @@ export default function App() {
     setMe(null);
     setCountdown(null);
     setPreRoll(null);
+    setEndsAt(null);
+    setResult(null);
     setScreen('lobby');
   }
 
   if (screen === 'lobby') return <LobbyScreen onJoined={handleJoined} />;
   if (screen === 'waiting') return <WaitingRoom room={room} me={me} onLeave={handleLeave} />;
-  if (screen === 'game') return <GameRoom room={room} me={me} countdown={countdown} preRoll={preRoll} onLeave={handleLeave} />;
+  if (screen === 'game') return (
+    <GameRoom
+      room={room} me={me}
+      countdown={countdown} preRoll={preRoll}
+      endsAt={endsAt} result={result}
+      onLeave={handleLeave}
+    />
+  );
 }

@@ -2,6 +2,7 @@ const {
   createRoom,
   joinRoom,
   leaveRoom,
+  updateSettings,
   startGame,
   buyStock,
   sellStock,
@@ -39,6 +40,16 @@ module.exports = function registerRoomHandlers(io, socket) {
 
     callback({ room: serializeRoom(result.room) });
     console.log(`[room:join] ${playerName} joined room ${code}`);
+  });
+
+  // Host updates game settings in the lobby
+  socket.on('room:updateSettings', ({ roomCode, settings }, callback) => {
+    const result = updateSettings(roomCode, socket.id, settings || {});
+    if (result.error) return callback?.({ error: result.error });
+
+    // Broadcast the clamped settings to everyone in the room
+    io.to(roomCode).emit('room:settingsUpdated', { settings: result.room.settings });
+    callback?.({ ok: true, settings: result.room.settings });
   });
 
   // Host starts the game
