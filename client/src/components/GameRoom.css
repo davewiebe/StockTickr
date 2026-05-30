@@ -52,6 +52,17 @@
   margin-top: 0.5rem;
 }
 
+.preroll-banner {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 0.55rem 1rem;
+  background: #10b98118;
+  color: var(--green);
+  border-bottom: 1px solid var(--border);
+}
+.preroll-banner strong { font-weight: 800; }
+
 .game-header {
   display: flex;
   align-items: center;

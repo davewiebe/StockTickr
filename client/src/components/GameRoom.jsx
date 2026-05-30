@@ -7,11 +7,12 @@ import Portfolio from './Portfolio';
 import RollFeed from './RollFeed';
 import './GameRoom.css';
 
-export default function GameRoom({ room, me, countdown, onLeave }) {
+export default function GameRoom({ room, me, countdown, preRoll, onLeave }) {
   const [activeTab, setActiveTab] = useState('market'); // 'market' | 'history' | 'scores'
   const [selectedStock, setSelectedStock] = useState(null);
 
   const showCountdown = countdown !== null && countdown !== undefined;
+  const showPreRoll = preRoll !== null && preRoll !== undefined;
 
   return (
     <div className="game-root">
@@ -32,6 +33,12 @@ export default function GameRoom({ room, me, countdown, onLeave }) {
           <button className="leave-btn-sm" onClick={onLeave}>Leave</button>
         </div>
       </header>
+
+      {showPreRoll && (
+        <div className="preroll-banner">
+          🟢 Trading open — buy in now! Stocks start moving in <strong>{preRoll}s</strong>
+        </div>
+      )}
 
       <div className="game-tabs">
         {['market', 'history', 'scores'].map(t => (
