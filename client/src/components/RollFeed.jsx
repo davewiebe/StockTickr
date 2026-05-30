@@ -1,11 +1,9 @@
 import './RollFeed.css';
 
 const ACTION_LABELS = {
-  up:      (a) => `▲ +$${a.amount}`,
-  down:    (a) => `▼ -$${a.amount}`,
-  div:     (a) => `💰 ${a.amount}% Dividend`,
-  split:   (a) => `✂️ ${a.amount}-for-1 Split`,
-  bankrupt:(a) => `💀 Bankruptcy`,
+  up:   (a) => `▲ +$${a.amount}`,
+  down: (a) => `▼ -$${a.amount}`,
+  div:  (a) => `💰 ${a.amount}% Dividend`,
 };
 
 export default function RollFeed({ history }) {
@@ -27,8 +25,8 @@ export default function RollFeed({ history }) {
           const label = r.bankrupt
             ? '💀 Bankrupt — shares wiped, reset to $100'
             : ACTION_LABELS[r.action.type]?.(r.action) || r.action.type;
-          const isPositive = !r.bankrupt && ['up', 'div', 'split'].includes(r.action.type);
-          const isNegative = r.bankrupt || ['down', 'bankrupt'].includes(r.action.type);
+          const isPositive = !r.bankrupt && ['up', 'div'].includes(r.action.type);
+          const isNegative = r.bankrupt || r.action.type === 'down';
           return (
             <li key={i} className={`roll-item ${isPositive ? 'pos' : isNegative ? 'neg' : ''}`}>
               <span className="roll-stock">{r.stockSymbol}</span>

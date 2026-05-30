@@ -2,7 +2,6 @@ const { rollDice, createInitialPrices, STOCKS } = require('./stocks');
 
 const STARTING_CASH = 5000;
 const TICK_INTERVAL_MS = 5000;
-const MIN_PRICE = 5;
 const MAX_PRICE = 200;
 // Par value a stock resets to after going bankrupt (hitting $0).
 const PAR_PRICE = 100;
@@ -138,17 +137,6 @@ function applyRoll(room) {
           player.cash += shares * dividendPerShare;
         }
       }
-      break;
-    case 'split':
-      // 2-for-1: double shares, halve price
-      newPrice = Math.max(MIN_PRICE, Math.floor(currentPrice / action.amount));
-      for (const player of room.players.values()) {
-        player.portfolio[stockSymbol] = player.portfolio[stockSymbol] * action.amount;
-      }
-      break;
-    case 'bankrupt':
-      newPrice = bankruptStock(room, stockSymbol);
-      event.bankrupt = true;
       break;
   }
 
