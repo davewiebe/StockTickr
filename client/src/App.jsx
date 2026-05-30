@@ -8,6 +8,7 @@ export default function App() {
   const [screen, setScreen] = useState('lobby');   // 'lobby' | 'waiting' | 'game'
   const [room, setRoom] = useState(null);
   const [me, setMe] = useState(null);
+  const [countdown, setCountdown] = useState(null); // seconds until market opens, or null
 
   useEffect(() => {
     connectSocket();
@@ -15,6 +16,15 @@ export default function App() {
     socket.on('game:started', ({ room }) => {
       setRoom(room);
       setScreen('game');
+    });
+
+    socket.on('game:countdown', ({ remaining }) => {
+      setCountdown(remaining);
+    });
+
+    socket.on('game:open', ({ room }) => {
+      setRoom(prev => ({ ...(prev || {}), ...room }));
+      setCountdown(null);
     });
 
     socket.on('room:playerJoined', ({ players }) => {
@@ -55,10 +65,11 @@ export default function App() {
     socket.emit('room:leave');
     setRoom(null);
     setMe(null);
+    setCountdown(null);
     setScreen('lobby');
   }
 
   if (screen === 'lobby') return <LobbyScreen onJoined={handleJoined} />;
   if (screen === 'waiting') return <WaitingRoom room={room} me={me} onLeave={handleLeave} />;
-  if (screen === 'game') return <GameRoom room={room} me={me} onLeave={handleLeave} />;
+  if (screen === 'game') return <GameRoom room={room} me={me} countdown={countdown} onLeave={handleLeave} />;
 }

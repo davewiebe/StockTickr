@@ -5,7 +5,7 @@ const {
   startGame,
   buyStock,
   sellStock,
-  startTicker,
+  startCountdown,
   serializeRoom,
   serializePlayers,
 } = require('../game/roomManager');
@@ -46,11 +46,11 @@ module.exports = function registerRoomHandlers(io, socket) {
     const result = startGame(roomCode, socket.id);
     if (result.error) return callback({ error: result.error });
 
-    startTicker(result.room, io);
-
+    // Move everyone to the game screen, then run the synced pre-market countdown.
     io.to(roomCode).emit('game:started', { room: serializeRoom(result.room) });
+    startCountdown(result.room, io);
     callback({ ok: true });
-    console.log(`[room:start] Game started in room ${roomCode}`);
+    console.log(`[room:start] Countdown started in room ${roomCode}`);
   });
 
   // Buy shares

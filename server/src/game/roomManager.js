@@ -2,6 +2,7 @@ const { rollDice, createInitialPrices, STOCKS } = require('./stocks');
 
 const STARTING_CASH = 5000;
 const TICK_INTERVAL_MS = 5000;
+const COUNTDOWN_SECONDS = 15;
 const MAX_PRICE = 200;
 // Par value a stock resets to after going bankrupt (hitting $0).
 const PAR_PRICE = 100;
@@ -32,11 +33,12 @@ function createRoom(hostSocketId, hostName) {
 
   const room = {
     code,
-    phase: 'lobby',       // 'lobby' | 'playing' | 'ended'
+    phase: 'lobby',       // 'lobby' | 'countdown' | 'playing' | 'ended'
     players: new Map([[hostSocketId, host]]),
     prices: createInitialPrices(),
     history: [],          // last N roll results
     tickTimer: null,
+    countdownTimer: null,
   };
 
   rooms.set(code, room);
@@ -78,6 +80,10 @@ function leaveRoom(socketId) {
 
     if (room.players.size === 0) {
       stopTicker(room);
+      if (room.countdownTimer) {
+        clearInterval(room.countdownTimer);
+        room.countdownTimer = null;
+      }
       rooms.delete(code);
       return { code, disbanded: true };
     }
@@ -104,7 +110,7 @@ function startGame(code, requestingSocketId) {
   if (room.players.size < 1) return { error: 'Need at least 1 player' };
   if (room.phase !== 'lobby') return { error: 'Game already started' };
 
-  room.phase = 'playing';
+  room.phase = 'countdown';
   return { room };
 }
 
@@ -198,6 +204,27 @@ function sellStock(code, socketId, symbol, shares) {
   return { player, prices: room.prices };
 }
 
+// Run a synced pre-market countdown, then open the market and start ticking.
+function startCountdown(room, io) {
+  if (room.countdownTimer) return;
+  let remaining = COUNTDOWN_SECONDS;
+  io.to(room.code).emit('game:countdown', { remaining });
+
+  room.countdownTimer = setInterval(() => {
+    remaining -= 1;
+    if (remaining > 0) {
+      io.to(room.code).emit('game:countdown', { remaining });
+      return;
+    }
+    clearInterval(room.countdownTimer);
+    room.countdownTimer = null;
+    if (room.phase !== 'countdown') return; // room may have been left/disbanded
+    room.phase = 'playing';
+    io.to(room.code).emit('game:open', { room: serializeRoom(room) });
+    startTicker(room, io);
+  }, 1000);
+}
+
 function startTicker(room, io) {
   if (room.tickTimer) return;
   room.tickTimer = setInterval(() => {
@@ -251,6 +278,7 @@ module.exports = {
   buyStock,
   sellStock,
   applyRoll,
+  startCountdown,
   startTicker,
   stopTicker,
   serializeRoom,
