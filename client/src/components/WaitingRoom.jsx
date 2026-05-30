@@ -30,6 +30,7 @@ export default function WaitingRoom({ room, me, onLeave }) {
   return (
     <div className="waiting-root">
       <div className="waiting-top">
+        <h1 className="lobby-title">StockTickr</h1>
         <h2 className="waiting-title">Waiting Room</h2>
         <div className="room-code-block" onClick={copyCode} title="Tap to copy">
           <span className="room-code-label">Room Code</span>
