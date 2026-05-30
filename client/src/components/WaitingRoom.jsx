@@ -62,7 +62,7 @@ export default function WaitingRoom({ room, me, onLeave }) {
       </div>
 
       <div className="card player-list">
-        <h3 className="section-label">Players ({room.players.length}/6)</h3>
+        <h3 className="section-label">Players ({room.players.length}/32)</h3>
         <ul>
           {room.players.map(p => (
             <li key={p.socketId} className="player-row">

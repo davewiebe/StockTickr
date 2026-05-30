@@ -88,7 +88,7 @@ export default function LobbyScreen({ onJoined }) {
         </form>
       </div>
 
-      <footer className="lobby-footer">Up to 6 players · Rolls every 5 seconds</footer>
+      <footer className="lobby-footer">Up to 32 players · Rolls every 5 seconds</footer>
     </div>
   );
 }
