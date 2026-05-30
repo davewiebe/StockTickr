@@ -4,6 +4,16 @@ const STARTING_CASH = 5000;
 const TICK_INTERVAL_MS = 5000;
 const MIN_PRICE = 5;
 const MAX_PRICE = 200;
+// Par value a stock resets to after going bankrupt (hitting $0).
+const PAR_PRICE = 100;
+
+// Bankrupt a stock: every holder loses their shares and the price resets to par.
+function bankruptStock(room, symbol) {
+  for (const player of room.players.values()) {
+    player.portfolio[symbol] = 0;
+  }
+  return PAR_PRICE;
+}
 
 // rooms: Map<roomCode, RoomState>
 const rooms = new Map();
@@ -112,7 +122,12 @@ function applyRoll(room) {
       newPrice = Math.min(MAX_PRICE, currentPrice + action.amount);
       break;
     case 'down':
-      newPrice = Math.max(MIN_PRICE, currentPrice - action.amount);
+      newPrice = currentPrice - action.amount;
+      if (newPrice <= 0) {
+        // Stock hit $0 — holders lose their shares, price resets to par.
+        newPrice = bankruptStock(room, stockSymbol);
+        event.bankrupt = true;
+      }
       break;
     case 'div':
       // Pay dividend: action.amount % of current price per share held
@@ -132,10 +147,8 @@ function applyRoll(room) {
       }
       break;
     case 'bankrupt':
-      newPrice = MIN_PRICE;
-      for (const player of room.players.values()) {
-        player.portfolio[stockSymbol] = 0;
-      }
+      newPrice = bankruptStock(room, stockSymbol);
+      event.bankrupt = true;
       break;
   }
 
@@ -249,6 +262,7 @@ module.exports = {
   startGame,
   buyStock,
   sellStock,
+  applyRoll,
   startTicker,
   stopTicker,
   serializeRoom,
