@@ -9,20 +9,30 @@ const STOCK_META = {
   GRAIN: { name: 'Grain',      color: '#10B981', emoji: '🌾' },
 };
 
-export default function PriceBoard({ prices }) {
+export default function PriceBoard({ prices, selected, onSelect }) {
+  const selectable = typeof onSelect === 'function';
+
   return (
     <div className="price-board card">
       <h3 className="section-label">Market Prices</h3>
       <div className="price-grid">
         {Object.entries(prices).map(([sym, price]) => {
           const meta = STOCK_META[sym] || { name: sym, color: '#6366f1', emoji: '📈' };
+          const isSelected = selected === sym;
           return (
-            <div key={sym} className="price-cell" style={{ '--stock-color': meta.color }}>
+            <button
+              key={sym}
+              type="button"
+              className={`price-cell${isSelected ? ' selected' : ''}${selectable ? ' selectable' : ''}`}
+              style={{ '--stock-color': meta.color }}
+              onClick={selectable ? () => onSelect(isSelected ? null : sym) : undefined}
+              aria-pressed={isSelected}
+            >
               <span className="price-emoji">{meta.emoji}</span>
               <span className="price-sym">{sym}</span>
               <span className="price-name">{meta.name}</span>
               <span className="price-val">${price}</span>
-            </div>
+            </button>
           );
         })}
       </div>
