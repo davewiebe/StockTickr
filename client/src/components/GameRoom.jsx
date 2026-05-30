@@ -6,11 +6,20 @@ import PriceBoard from './PriceBoard';
 import RollFeed from './RollFeed';
 import './GameRoom.css';
 
-export default function GameRoom({ room, me, onLeave }) {
+export default function GameRoom({ room, me, countdown, onLeave }) {
   const [activeTab, setActiveTab] = useState('market'); // 'market' | 'trade' | 'scores'
+
+  const showCountdown = countdown !== null && countdown !== undefined;
 
   return (
     <div className="game-root">
+      {showCountdown && (
+        <div className="countdown-overlay">
+          <span className="countdown-label">Market opens in</span>
+          <span className="countdown-number" key={countdown}>{countdown}</span>
+          <span className="countdown-hint">Get ready to trade…</span>
+        </div>
+      )}
       <header className="game-header">
         <div className="game-header-left">
           <span className="game-room-code">{room.code}</span>
