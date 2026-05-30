@@ -66,12 +66,16 @@ export default function App() {
     });
 
     socket.on('game:tick', ({ rollEvent, prices, players }) => {
-      setRoom(prev => prev ? { ...prev, prices, players, history: [rollEvent, ...(prev.history || [])].slice(0, 20) } : prev);
+      setRoom(prev => prev ? { ...prev, prices, players, history: [rollEvent, ...(prev.history || [])].slice(0, 50) } : prev);
       setMe(prev => {
         if (!prev) return prev;
         return players.find(p => p.socketId === socket.id) || prev;
       });
       if (rollEvent?.callout) setCallout({ text: rollEvent.callout, id: Date.now() });
+    });
+
+    socket.on('game:trade', ({ entry }) => {
+      setRoom(prev => prev ? { ...prev, history: [entry, ...(prev.history || [])].slice(0, 50) } : prev);
     });
 
     socket.on('game:callout', ({ text }) => {

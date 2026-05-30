@@ -42,7 +42,7 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
         </div>
       )}
 
-      <LastRoll roll={room.history?.[0]} />
+      <LastRoll roll={room.history?.find(e => (e.type || 'roll') === 'roll')} />
       <Callout callout={callout} />
 
       <div className="game-tabs">

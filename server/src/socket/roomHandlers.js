@@ -6,6 +6,7 @@ const {
   startGame,
   buyStock,
   sellStock,
+  recordTrade,
   buildTradeCallout,
   getRoom,
   startCountdown,
@@ -85,6 +86,8 @@ module.exports = function registerRoomHandlers(io, socket) {
     const room = getRoom(roomCode);
     if (room) {
       io.to(roomCode).emit('room:playersUpdated', { players: serializePlayers(room) });
+      const entry = recordTrade(room, result.player, 'buy', symbol, Number(shares), result.prices[symbol]);
+      io.to(roomCode).emit('game:trade', { entry });
     }
     emitTradeCallout(io, roomCode, result.player, 'buy', symbol, Number(shares), result.prices);
   });
@@ -99,6 +102,8 @@ module.exports = function registerRoomHandlers(io, socket) {
     const room = getRoom(roomCode);
     if (room) {
       io.to(roomCode).emit('room:playersUpdated', { players: serializePlayers(room) });
+      const entry = recordTrade(room, result.player, 'sell', symbol, Number(shares), result.prices[symbol]);
+      io.to(roomCode).emit('game:trade', { entry });
     }
     emitTradeCallout(io, roomCode, result.player, 'sell', symbol, Number(shares), result.prices);
   });

@@ -271,9 +271,27 @@ function applyRoll(room) {
   }
 
   event.callout = buildRollCallout(room, beforeNetWorth, event);
+  event.type = 'roll';
+  event.ts = Date.now();
 
-  room.history = [event, ...room.history].slice(0, 20);
+  room.history = [event, ...room.history].slice(0, 50);
   return event;
+}
+
+// Record a completed trade into the room timeline. Returns the entry to broadcast.
+function recordTrade(room, player, side, symbol, shares, price) {
+  const entry = {
+    type: 'trade',
+    ts: Date.now(),
+    playerName: player.name,
+    side,            // 'buy' | 'sell'
+    symbol,
+    shares,
+    price,
+    value: price * shares,
+  };
+  room.history = [entry, ...room.history].slice(0, 50);
+  return entry;
 }
 
 function buyStock(code, socketId, symbol, shares) {
@@ -432,6 +450,7 @@ module.exports = {
   buyStock,
   sellStock,
   applyRoll,
+  recordTrade,
   buildTradeCallout,
   startCountdown,
   startTicker,
