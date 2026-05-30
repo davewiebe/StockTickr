@@ -4,6 +4,7 @@
   "scripts": {
     "start": "node server/index.js",
     "build": "cd server && npm install && cd ../client && npm install && npm run build",
+    "postinstall": "npm run build",
     "install:all": "cd server && npm install && cd ../client && npm install"
   }
 }
