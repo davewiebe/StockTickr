@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { socket } from '../socket';
 import Leaderboard from './Leaderboard';
-import PriceBoard from './PriceBoard';
-import MarketTrade from './MarketTrade';
+import MarketPanel from './MarketPanel';
 import Portfolio from './Portfolio';
 import RollFeed from './RollFeed';
 import LastRoll from './LastRoll';
@@ -10,7 +9,6 @@ import './GameRoom.css';
 
 export default function GameRoom({ room, me, countdown, preRoll, onLeave }) {
   const [activeTab, setActiveTab] = useState('market'); // 'market' | 'history' | 'scores'
-  const [selectedStock, setSelectedStock] = useState(null);
 
   const showCountdown = countdown !== null && countdown !== undefined;
   const showPreRoll = preRoll !== null && preRoll !== undefined;
@@ -58,8 +56,7 @@ export default function GameRoom({ room, me, countdown, preRoll, onLeave }) {
       <div className="game-content">
         {activeTab === 'market' && (
           <>
-            <PriceBoard prices={room.prices} selected={selectedStock} onSelect={setSelectedStock} />
-            <MarketTrade room={room} me={me} selected={selectedStock} />
+            <MarketPanel room={room} me={me} />
             <Portfolio room={room} me={me} />
           </>
         )}
