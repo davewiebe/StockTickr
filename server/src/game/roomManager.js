@@ -2,7 +2,8 @@ const { rollDice, createInitialPrices, STOCKS } = require('./stocks');
 
 const STARTING_CASH = 5000;
 const TICK_INTERVAL_MS = 5000;
-const COUNTDOWN_SECONDS = 15;
+const COUNTDOWN_SECONDS = 3;   // delay before the market opens for trading
+const PRE_ROLL_SECONDS = 15;   // open-but-frozen window for initial buys before dice start
 const MAX_PRICE = 200;
 // Par value a stock resets to after going bankrupt (hitting $0).
 const PAR_PRICE = 100;
@@ -39,6 +40,7 @@ function createRoom(hostSocketId, hostName) {
     history: [],          // last N roll results
     tickTimer: null,
     countdownTimer: null,
+    preRollTimer: null,
   };
 
   rooms.set(code, room);
@@ -83,6 +85,10 @@ function leaveRoom(socketId) {
       if (room.countdownTimer) {
         clearInterval(room.countdownTimer);
         room.countdownTimer = null;
+      }
+      if (room.preRollTimer) {
+        clearInterval(room.preRollTimer);
+        room.preRollTimer = null;
       }
       rooms.delete(code);
       return { code, disbanded: true };
@@ -204,7 +210,7 @@ function sellStock(code, socketId, symbol, shares) {
   return { player, prices: room.prices };
 }
 
-// Run a synced pre-market countdown, then open the market and start ticking.
+// Pre-market countdown -> open the market for trading -> pre-roll window -> dice start.
 function startCountdown(room, io) {
   if (room.countdownTimer) return;
   let remaining = COUNTDOWN_SECONDS;
@@ -221,6 +227,27 @@ function startCountdown(room, io) {
     if (room.phase !== 'countdown') return; // room may have been left/disbanded
     room.phase = 'playing';
     io.to(room.code).emit('game:open', { room: serializeRoom(room) });
+    startPreRoll(room, io);
+  }, 1000);
+}
+
+// Market is open and tradeable, but prices stay frozen so players can buy in.
+// After PRE_ROLL_SECONDS the dice start rolling.
+function startPreRoll(room, io) {
+  if (room.preRollTimer) return;
+  let remaining = PRE_ROLL_SECONDS;
+  io.to(room.code).emit('game:preroll', { remaining });
+
+  room.preRollTimer = setInterval(() => {
+    remaining -= 1;
+    if (remaining > 0) {
+      io.to(room.code).emit('game:preroll', { remaining });
+      return;
+    }
+    clearInterval(room.preRollTimer);
+    room.preRollTimer = null;
+    if (room.phase !== 'playing') return; // room may have been left/disbanded
+    io.to(room.code).emit('game:rolling', {}); // dice are now live
     startTicker(room, io);
   }, 1000);
 }
