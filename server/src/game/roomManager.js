@@ -1,10 +1,21 @@
 const { rollDice, createInitialPrices, STOCKS } = require('./stocks');
 
 const STARTING_CASH = 5000;
-const TICK_INTERVAL_MS = 5000;
 const COUNTDOWN_SECONDS = 3;   // delay before the market opens for trading
 const PRE_ROLL_SECONDS = 15;   // open-but-frozen window for initial buys before dice start
 const MAX_PRICE = 200;
+
+// Host-configurable game settings (with defaults + valid ranges).
+const DEFAULT_DURATION_MIN = 5;
+const DEFAULT_ROLL_INTERVAL_S = 5;
+const MIN_DURATION_MIN = 1, MAX_DURATION_MIN = 60;
+const MIN_ROLL_INTERVAL_S = 1, MAX_ROLL_INTERVAL_S = 60;
+
+function clamp(n, min, max, fallback) {
+  n = Math.round(Number(n));
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
 // Par value a stock resets to after going bankrupt (hitting $0).
 const PAR_PRICE = 100;
 
@@ -38,9 +49,15 @@ function createRoom(hostSocketId, hostName) {
     players: new Map([[hostSocketId, host]]),
     prices: createInitialPrices(),
     history: [],          // last N roll results
+    settings: {
+      durationMinutes: DEFAULT_DURATION_MIN,
+      rollIntervalSeconds: DEFAULT_ROLL_INTERVAL_S,
+    },
+    endsAt: null,         // epoch ms when the game ends (set when dice start)
     tickTimer: null,
     countdownTimer: null,
     preRollTimer: null,
+    endTimer: null,
   };
 
   rooms.set(code, room);
@@ -60,6 +77,25 @@ function createPlayer(socketId, name, isHost = false) {
 
 function getRoom(code) {
   return rooms.get(code) || null;
+}
+
+// Host-only: update game settings while still in the lobby. Values are clamped.
+function updateSettings(code, socketId, incoming) {
+  const room = rooms.get(code);
+  if (!room) return { error: 'Room not found' };
+  if (room.phase !== 'lobby') return { error: 'Game already started' };
+  const requester = room.players.get(socketId);
+  if (!requester?.isHost) return { error: 'Only the host can change settings' };
+
+  if (incoming.durationMinutes !== undefined) {
+    room.settings.durationMinutes = clamp(
+      incoming.durationMinutes, MIN_DURATION_MIN, MAX_DURATION_MIN, DEFAULT_DURATION_MIN);
+  }
+  if (incoming.rollIntervalSeconds !== undefined) {
+    room.settings.rollIntervalSeconds = clamp(
+      incoming.rollIntervalSeconds, MIN_ROLL_INTERVAL_S, MAX_ROLL_INTERVAL_S, DEFAULT_ROLL_INTERVAL_S);
+  }
+  return { room };
 }
 
 function joinRoom(code, socketId, playerName) {
@@ -89,6 +125,10 @@ function leaveRoom(socketId) {
       if (room.preRollTimer) {
         clearInterval(room.preRollTimer);
         room.preRollTimer = null;
+      }
+      if (room.endTimer) {
+        clearTimeout(room.endTimer);
+        room.endTimer = null;
       }
       rooms.delete(code);
       return { code, disbanded: true };
@@ -247,8 +287,11 @@ function startPreRoll(room, io) {
     clearInterval(room.preRollTimer);
     room.preRollTimer = null;
     if (room.phase !== 'playing') return; // room may have been left/disbanded
-    io.to(room.code).emit('game:rolling', {}); // dice are now live
+    // Dice are now live; arm the game-end timer based on the configured duration.
+    room.endsAt = Date.now() + room.settings.durationMinutes * 60 * 1000;
+    io.to(room.code).emit('game:rolling', { endsAt: room.endsAt });
     startTicker(room, io);
+    room.endTimer = setTimeout(() => endGame(room, io), room.settings.durationMinutes * 60 * 1000);
   }, 1000);
 }
 
@@ -265,7 +308,7 @@ function startTicker(room, io) {
       prices: room.prices,
       players: serializePlayers(room),
     });
-  }, TICK_INTERVAL_MS);
+  }, room.settings.rollIntervalSeconds * 1000);
 }
 
 function stopTicker(room) {
@@ -273,6 +316,18 @@ function stopTicker(room) {
     clearInterval(room.tickTimer);
     room.tickTimer = null;
   }
+}
+
+// End the game: stop the dice, freeze trading, broadcast final standings + winner.
+function endGame(room, io) {
+  if (room.endTimer) { clearTimeout(room.endTimer); room.endTimer = null; }
+  if (room.phase === 'ended') return;
+  stopTicker(room);
+  room.phase = 'ended';
+
+  const standings = serializePlayers(room).sort((a, b) => b.netWorth - a.netWorth);
+  const winner = standings[0] || null;
+  io.to(room.code).emit('game:ended', { standings, winner });
 }
 
 function serializePlayers(room) {
@@ -292,6 +347,8 @@ function serializeRoom(room) {
     phase: room.phase,
     prices: room.prices,
     history: room.history,
+    settings: room.settings,
+    endsAt: room.endsAt,
     players: serializePlayers(room),
   };
 }
@@ -301,6 +358,7 @@ module.exports = {
   getRoom,
   joinRoom,
   leaveRoom,
+  updateSettings,
   startGame,
   buyStock,
   sellStock,
@@ -308,6 +366,7 @@ module.exports = {
   startCountdown,
   startTicker,
   stopTicker,
+  endGame,
   serializeRoom,
   serializePlayers,
 };

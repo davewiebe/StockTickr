@@ -103,6 +103,22 @@
   50%       { opacity: 0.5; }
 }
 
+.game-timer {
+  font-weight: 800;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.2rem 0.5rem;
+}
+.game-timer.urgent {
+  color: var(--red);
+  border-color: var(--red);
+  animation: pulse 1s infinite;
+}
+
 .game-cash {
   font-weight: 700;
   font-size: 1rem;

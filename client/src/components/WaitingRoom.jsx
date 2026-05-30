@@ -2,9 +2,19 @@ import { useState } from 'react';
 import { socket } from '../socket';
 import './WaitingRoom.css';
 
+const DURATION_MIN = 1, DURATION_MAX = 60;
+const ROLL_MIN = 1, ROLL_MAX = 60;
+
 export default function WaitingRoom({ room, me, onLeave }) {
   const [error, setError] = useState('');
   const isHost = me?.isHost;
+
+  const settings = room.settings || { durationMinutes: 5, rollIntervalSeconds: 5 };
+
+  function changeSetting(key, value, min, max) {
+    const v = Math.min(max, Math.max(min, value));
+    socket.emit('room:updateSettings', { roomCode: room.code, settings: { [key]: v } });
+  }
 
   function handleStart() {
     setError('');
@@ -26,6 +36,29 @@ export default function WaitingRoom({ room, me, onLeave }) {
           <span className="room-code">{room.code}</span>
           <span className="room-code-hint">tap to copy</span>
         </div>
+      </div>
+
+      <div className="card settings-card">
+        <h3 className="section-label">Game Options</h3>
+        <Stepper
+          label="Time limit"
+          value={settings.durationMinutes}
+          unit="min"
+          min={DURATION_MIN}
+          max={DURATION_MAX}
+          disabled={!isHost}
+          onChange={(v) => changeSetting('durationMinutes', v, DURATION_MIN, DURATION_MAX)}
+        />
+        <Stepper
+          label="Roll every"
+          value={settings.rollIntervalSeconds}
+          unit="sec"
+          min={ROLL_MIN}
+          max={ROLL_MAX}
+          disabled={!isHost}
+          onChange={(v) => changeSetting('rollIntervalSeconds', v, ROLL_MIN, ROLL_MAX)}
+        />
+        {!isHost && <p className="settings-note">Only the host can change these.</p>}
       </div>
 
       <div className="card player-list">
@@ -54,6 +87,31 @@ export default function WaitingRoom({ room, me, onLeave }) {
         )}
         {error && <p className="error">{error}</p>}
         <button className="leave-btn" onClick={onLeave}>Leave Room</button>
+      </div>
+    </div>
+  );
+}
+
+function Stepper({ label, value, unit, min, max, disabled, onChange }) {
+  return (
+    <div className="stepper-row">
+      <span className="stepper-label">{label}</span>
+      <div className="stepper-controls">
+        <button
+          type="button"
+          className="stepper-btn"
+          disabled={disabled || value <= min}
+          onClick={() => onChange(value - 1)}
+          aria-label={`Decrease ${label}`}
+        >−</button>
+        <span className="stepper-value">{value}<small>{unit}</small></span>
+        <button
+          type="button"
+          className="stepper-btn"
+          disabled={disabled || value >= max}
+          onClick={() => onChange(value + 1)}
+          aria-label={`Increase ${label}`}
+        >+</button>
       </div>
     </div>
   );
