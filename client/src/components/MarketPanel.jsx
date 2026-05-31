@@ -14,7 +14,6 @@ const QUANTITIES = [5, 10, 20];
 
 export default function MarketPanel({ room, me }) {
   const [selected, setSelected] = useState(null);
-  const [side, setSide] = useState('buy');   // 'buy' | 'sell'
   const [qty, setQty] = useState(5);
   const [message, setMessage] = useState(null); // { text, ok }
 
@@ -22,16 +21,15 @@ export default function MarketPanel({ room, me }) {
   const held  = selected ? (me?.portfolio?.[selected] || 0) : 0;
   const cost  = price * qty;
 
-  const cannotBuy  = cost > (me?.cash || 0);
-  const cannotSell = held < qty;
-  const disabled = !selected || (side === 'buy' ? cannotBuy : cannotSell);
+  const cannotBuy  = !selected || cost > (me?.cash || 0);
+  const cannotSell = !selected || held < qty;
 
   function select(sym) {
     setSelected(prev => (prev === sym ? null : sym));
     setMessage(null);
   }
 
-  function confirmTrade() {
+  function trade(side) {
     if (!selected) return;
     setMessage(null);
     socket.emit(`trade:${side}`, { roomCode: room.code, symbol: selected, shares: qty }, (res) => {
@@ -59,41 +57,43 @@ export default function MarketPanel({ room, me }) {
         ))}
       </div>
 
-      <div className="mp-trade">
-        <button
-          type="button"
-          className={`mp-side ${side}`}
-          disabled={!selected}
-          onClick={() => { setSide(s => (s === 'buy' ? 'sell' : 'buy')); setMessage(null); }}
-        >
-          {side === 'buy' ? 'Buy' : 'Sell'}
-        </button>
-
-        <div className="mp-qty" role="group" aria-label="Quantity">
-          {QUANTITIES.map(q => (
-            <button
-              key={q}
-              type="button"
-              className={`mp-qty-btn${qty === q ? ' active' : ''}`}
-              onClick={() => { setQty(q); setMessage(null); }}
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-
-        <button type="button" className="mp-confirm" onClick={confirmTrade} disabled={disabled}>
-          {!selected
-            ? 'Select a stock'
-            : disabled
-              ? (side === 'buy' ? 'Not enough cash' : 'Not enough shares')
-              : `${side === 'buy' ? 'Buy' : 'Sell'} ${qty} ${selected} · $${cost.toLocaleString()}`}
-        </button>
+      <div className="mp-qty-row" role="group" aria-label="Quantity">
+        {QUANTITIES.map(q => (
+          <button
+            key={q}
+            type="button"
+            className={`mp-qty-btn${qty === q ? ' active' : ''}`}
+            onClick={() => { setQty(q); setMessage(null); }}
+          >
+            {q} shares
+          </button>
+        ))}
       </div>
 
       {selected && (
-        <p className="mp-meta">{selected} @ ${price} · you hold {held}</p>
+        <p className="mp-meta">{selected} @ ${price} · {qty} shares = ${cost.toLocaleString()} · you hold {held}</p>
       )}
+
+      <div className="mp-actions">
+        <button
+          type="button"
+          className="mp-buy"
+          disabled={cannotBuy}
+          onClick={() => trade('buy')}
+        >
+          {cannotBuy && selected ? 'Not enough cash' : `Buy · $${selected ? cost.toLocaleString() : '—'}`}
+        </button>
+        <button
+          type="button"
+          className="mp-sell"
+          disabled={cannotSell}
+          onClick={() => trade('sell')}
+        >
+          {cannotSell && selected ? 'Not enough shares' : `Sell · $${selected ? cost.toLocaleString() : '—'}`}
+        </button>
+      </div>
+
+      {!selected && <p className="mp-hint">Select a stock above to trade.</p>}
       {message && <p className={message.ok ? 'mp-ok' : 'error'}>{message.text}</p>}
     </div>
   );
