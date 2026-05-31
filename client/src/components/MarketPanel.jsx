@@ -33,8 +33,7 @@ export default function MarketPanel({ room, me }) {
     if (!selected) return;
     setMessage(null);
     socket.emit(`trade:${side}`, { roomCode: room.code, symbol: selected, shares: qty }, (res) => {
-      if (res?.error) setMessage({ text: res.error, ok: false });
-      else setMessage({ text: `${side === 'buy' ? 'Bought' : 'Sold'} ${qty} ${selected}`, ok: true });
+      setMessage(res?.error ? { text: res.error } : null);
     });
   }
 
