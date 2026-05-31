@@ -18,9 +18,7 @@ function actionLabel(r) {
 }
 
 export default function LastRoll({ roll }) {
-  if (!roll) {
-    return <div className="last-roll empty">Waiting for first roll…</div>;
-  }
+  if (!roll) return null;
 
   const meta = META[roll.stockSymbol] || { emoji: '📈', color: '#6366f1' };
   const pos = !roll.bankrupt && (roll.action.type === 'up' || roll.action.type === 'div');

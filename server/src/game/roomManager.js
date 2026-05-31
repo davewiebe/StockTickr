@@ -386,7 +386,7 @@ function startPreRoll(room, io) {
 
 function startTicker(room, io) {
   if (room.tickTimer) return;
-  room.tickTimer = setInterval(() => {
+  const roll = () => {
     if (room.phase !== 'playing') {
       stopTicker(room);
       return;
@@ -397,7 +397,9 @@ function startTicker(room, io) {
       prices: room.prices,
       players: serializePlayers(room),
     });
-  }, room.settings.rollIntervalSeconds * 1000);
+  };
+  roll(); // fire the first roll immediately when the market opens
+  room.tickTimer = setInterval(roll, room.settings.rollIntervalSeconds * 1000);
 }
 
 function stopTicker(room) {
