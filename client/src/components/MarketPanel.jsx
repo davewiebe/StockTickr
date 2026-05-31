@@ -21,18 +21,22 @@ export default function MarketPanel({ room, me }) {
   const held  = selected ? (me?.portfolio?.[selected] || 0) : 0;
   const cost  = price * qty;
 
+  // Selling caps at what you actually hold, so "20" sells the rest if you have fewer.
+  const sellQty = Math.min(qty, held);
+  const sellValue = price * sellQty;
+
   const cannotBuy  = !selected || cost > (me?.cash || 0);
-  const cannotSell = !selected || held < qty;
+  const cannotSell = !selected || held <= 0;
 
   function select(sym) {
     setSelected(prev => (prev === sym ? null : sym));
     setMessage(null);
   }
 
-  function trade(side) {
-    if (!selected) return;
+  function trade(side, shares) {
+    if (!selected || shares <= 0) return;
     setMessage(null);
-    socket.emit(`trade:${side}`, { roomCode: room.code, symbol: selected, shares: qty }, (res) => {
+    socket.emit(`trade:${side}`, { roomCode: room.code, symbol: selected, shares }, (res) => {
       setMessage(res?.error ? { text: res.error } : null);
     });
   }
@@ -89,7 +93,7 @@ export default function MarketPanel({ room, me }) {
           type="button"
           className="mp-buy"
           disabled={cannotBuy}
-          onClick={() => trade('buy')}
+          onClick={() => trade('buy', qty)}
         >
           {cannotBuy && selected ? 'Not enough cash' : `Buy · $${selected ? cost.toLocaleString() : '—'}`}
         </button>
@@ -97,9 +101,13 @@ export default function MarketPanel({ room, me }) {
           type="button"
           className="mp-sell"
           disabled={cannotSell}
-          onClick={() => trade('sell')}
+          onClick={() => trade('sell', sellQty)}
         >
-          {cannotSell && selected ? 'Not enough shares' : `Sell · $${selected ? cost.toLocaleString() : '—'}`}
+          {cannotSell && selected
+            ? 'No shares'
+            : sellQty < qty
+              ? `Sell ${sellQty} · $${sellValue.toLocaleString()}`
+              : `Sell · $${selected ? cost.toLocaleString() : '—'}`}
         </button>
       </div>
 
