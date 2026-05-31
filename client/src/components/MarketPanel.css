@@ -65,5 +65,7 @@
 .mp-sell { background: var(--red);   color: #fff; font-weight: 700; padding: 0.65rem 0; }
 
 .mp-hint { color: var(--muted); font-size: 0.85rem; margin-top: 0.6rem; text-align: center; }
+.mp-cash { color: var(--muted); font-size: 0.85rem; margin-top: 0.6rem; text-align: right; }
+.mp-cash strong { color: var(--green); }
 .mp-ok { color: var(--green); font-size: 0.85rem; margin-top: 0.5rem; text-align: center; }
 .market-panel .error { text-align: center; }
