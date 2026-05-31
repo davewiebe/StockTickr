@@ -12,6 +12,7 @@ import './GameRoom.css';
 
 export default function GameRoom({ room, me, countdown, preRoll, endsAt, result, callout, onLeave }) {
   const [activeTab, setActiveTab] = useState('market'); // 'market' | 'history' | 'scores'
+  const [confirmLeave, setConfirmLeave] = useState(false);
 
   const showCountdown = countdown !== null && countdown !== undefined;
   const showPreRoll = preRoll !== null && preRoll !== undefined;
@@ -33,7 +34,7 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
         <div className="game-header-right">
           {endsAt && <GameTimer endsAt={endsAt} />}
           <span className="game-cash">${me?.cash?.toLocaleString()}</span>
-          <button className="leave-btn-sm" onClick={onLeave}>Leave</button>
+          <button className="leave-btn-sm" onClick={() => setConfirmLeave(true)}>Leave</button>
         </div>
       </header>
 
@@ -75,6 +76,18 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
 
       {result && <GameOver result={result} myId={socket.id} onLeave={onLeave} />}
       <TradeToasts />
+
+      {confirmLeave && (
+        <div className="confirm-overlay">
+          <div className="confirm-card card">
+            <p className="confirm-msg">Leave the game?<br/><span>Your portfolio will be lost.</span></p>
+            <div className="confirm-btns">
+              <button className="confirm-stay" onClick={() => setConfirmLeave(false)}>Stay</button>
+              <button className="confirm-leave" onClick={onLeave}>Leave</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
