@@ -84,10 +84,6 @@ export default function MarketPanel({ room, me }) {
         ))}
       </div>
 
-      {selected && (
-        <p className="mp-meta">{selected} @ ${price} · {qty} shares = ${cost.toLocaleString()} · you hold {held}</p>
-      )}
-
       <div className="mp-actions">
         <button
           type="button"
