@@ -95,6 +95,7 @@ export default function MarketPanel({ room, me }) {
 
       {!selected && <p className="mp-hint">Select a stock above to trade.</p>}
       {message && <p className={message.ok ? 'mp-ok' : 'error'}>{message.text}</p>}
+      <p className="mp-cash">Cash: <strong>${me?.cash?.toLocaleString()}</strong></p>
     </div>
   );
 }
