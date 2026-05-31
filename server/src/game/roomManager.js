@@ -248,12 +248,14 @@ function applyRoll(room) {
       }
       break;
     case 'div':
-      // Pay dividend: action.amount % of current price per share held
-      dividendPerShare = Math.floor((currentPrice * action.amount) / 100);
-      for (const player of room.players.values()) {
-        const shares = player.portfolio[stockSymbol];
-        if (shares > 0) {
-          player.cash += shares * dividendPerShare;
+      // Dividends only pay when the stock is at or above par ($100).
+      if (currentPrice >= PAR_PRICE) {
+        dividendPerShare = Math.floor((currentPrice * action.amount) / 100);
+        for (const player of room.players.values()) {
+          const shares = player.portfolio[stockSymbol];
+          if (shares > 0) {
+            player.cash += shares * dividendPerShare;
+          }
         }
       }
       break;
