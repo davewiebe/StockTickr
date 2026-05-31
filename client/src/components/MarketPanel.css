@@ -24,6 +24,29 @@
 .mp-cell .mp-sym   { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; color: var(--stock-color); }
 .mp-cell .mp-price { font-size: 0.95rem; font-weight: 700; }
 
+.mp-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  min-height: 8px;
+  margin-top: 2px;
+  max-width: 100%;
+}
+.mp-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--stock-color);
+}
+.mp-dot-empty {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+
 .mp-cell.selected {
   border-color: var(--stock-color);
   box-shadow: 0 0 0 1.5px var(--stock-color);

@@ -41,20 +41,31 @@ export default function MarketPanel({ room, me }) {
   return (
     <div className="market-panel card">
       <div className="mp-grid">
-        {STOCKS.map(({ sym, emoji, color }) => (
-          <button
-            key={sym}
-            type="button"
-            className={`mp-cell${selected === sym ? ' selected' : ''}`}
-            style={{ '--stock-color': color }}
-            onClick={() => select(sym)}
-            aria-pressed={selected === sym}
-          >
-            <span className="mp-emoji">{emoji}</span>
-            <span className="mp-sym">{sym}</span>
-            <span className="mp-price">${room.prices[sym]}</span>
-          </button>
-        ))}
+        {STOCKS.map(({ sym, emoji, color }) => {
+          const owned = me?.portfolio?.[sym] || 0;
+          const dots = Math.floor(owned / 5);
+          return (
+            <button
+              key={sym}
+              type="button"
+              className={`mp-cell${selected === sym ? ' selected' : ''}`}
+              style={{ '--stock-color': color }}
+              onClick={() => select(sym)}
+              aria-pressed={selected === sym}
+            >
+              <span className="mp-emoji">{emoji}</span>
+              <span className="mp-sym">{sym}</span>
+              <span className="mp-price">${room.prices[sym]}</span>
+              <span className="mp-dots" title={`${owned} shares owned`} aria-label={`${owned} shares owned`}>
+                {dots > 0
+                  ? Array.from({ length: dots }, (_, i) => (
+                      <span key={i} className="mp-dot" />
+                    ))
+                  : <span className="mp-dot-empty" />}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="mp-qty-row" role="group" aria-label="Quantity">
