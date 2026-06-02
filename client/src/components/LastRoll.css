@@ -25,4 +25,5 @@
 .lr-emoji { font-size: 1rem; line-height: 1; }
 .lr-sym   { font-weight: 800; letter-spacing: 0.04em; }
 .lr-action { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.lr-action.no-payout { text-decoration: line-through; color: var(--muted); }
 .lr-price { font-weight: 700; color: var(--muted); }
