@@ -64,7 +64,7 @@
   animation: mp-coin-up 1.2s ease-out forwards;
 }
 .mp-coin.left  { left: 0.35rem; }
-.mp-coin.right { right: 0.35rem; animation-delay: 0.12s; }
+.mp-coin.right { right: 0.35rem; }
 
 @keyframes mp-coin-up {
   0%   { opacity: 0; transform: translateY(4px) scale(0.8); }
