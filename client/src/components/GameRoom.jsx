@@ -34,7 +34,9 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
         </div>
         <div className="game-header-right">
           {endsAt && <GameTimer endsAt={endsAt} />}
-          <span className="game-cash" title="Net worth (cash + stocks)">${me?.netWorth?.toLocaleString()}</span>
+          <span className="game-cash" title="Cash (net worth incl. stocks)">
+            ${me?.cash?.toLocaleString()} <span className="game-networth">(${me?.netWorth?.toLocaleString()})</span>
+          </span>
           <button className="leave-btn-sm" onClick={() => setConfirmLeave(true)}>Leave</button>
         </div>
       </header>
