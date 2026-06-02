@@ -40,6 +40,20 @@ export default function MarketPanel({ room, me }) {
     prevPrices.current = room.prices;
   }, [room.prices]);
 
+  // When a dividend actually pays out, flutter money icons up the cell.
+  // Dividends don't move the price, so watch the latest roll in history instead.
+  const [divBump, setDivBump] = useState({});
+  const lastRollTs = useRef(0);
+  useEffect(() => {
+    const latestRoll = (room.history || []).find(e => (e.type || 'roll') === 'roll');
+    if (!latestRoll || !latestRoll.ts || latestRoll.ts === lastRollTs.current) return;
+    lastRollTs.current = latestRoll.ts;
+    if (latestRoll.action?.type === 'div' && latestRoll.dividendPerShare > 0) {
+      const sym = latestRoll.stockSymbol;
+      setDivBump(d => ({ ...d, [sym]: (d[sym] || 0) + 1 }));
+    }
+  }, [room.history]);
+
   const price = selected ? (room.prices[selected] || 0) : 0;
   const held  = selected ? (me?.portfolio?.[selected] || 0) : 0;
   const cost  = price * qty;
@@ -72,7 +86,7 @@ export default function MarketPanel({ room, me }) {
           const dots = Math.floor(owned / 5);
           return (
             <button
-              key={`${sym}-${bump[sym] || 0}`}
+              key={`${sym}-${bump[sym] || 0}-${divBump[sym] || 0}`}
               type="button"
               className={`mp-cell${selected === sym ? ' selected' : ''}${bump[sym] ? ' mp-bump' : ''}`}
               style={{ '--stock-color': color }}
@@ -81,12 +95,17 @@ export default function MarketPanel({ room, me }) {
             >
               {bump[sym] && delta[sym] ? (
                 <span
-                  key={bump[sym]}
                   className={`mp-delta${delta[sym] > 0 ? ' up' : ' down'}`}
                   aria-hidden="true"
                 >
                   {delta[sym] > 0 ? '+' : '-'}${Math.abs(delta[sym])}
                 </span>
+              ) : null}
+              {divBump[sym] ? (
+                <>
+                  <span className="mp-coin left" aria-hidden="true">💰</span>
+                  <span className="mp-coin right" aria-hidden="true">💰</span>
+                </>
               ) : null}
               <span className="mp-emoji">{emoji}</span>
               <span className="mp-sym">{sym}</span>
