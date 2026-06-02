@@ -11,12 +11,18 @@ import StockChart from './StockChart';
 import GameOver from './GameOver';
 import './GameRoom.css';
 
-export default function GameRoom({ room, me, countdown, preRoll, endsAt, result, callout, priceHistory, onLeave }) {
+export default function GameRoom({ room, me, countdown, preRoll, endsAt, paused, result, callout, priceHistory, onLeave }) {
   const [activeTab, setActiveTab] = useState('market'); // 'market' | 'charts' | 'history' | 'scores'
   const [confirmLeave, setConfirmLeave] = useState(false);
 
   const showCountdown = countdown !== null && countdown !== undefined;
   const showPreRoll = preRoll !== null && preRoll !== undefined;
+  // The host can pause once the dice are rolling (endsAt set) or while paused.
+  const canControlPause = me?.isHost && (paused || (!!endsAt && !showCountdown && !showPreRoll));
+
+  function togglePause() {
+    socket.emit(paused ? 'room:resume' : 'room:pause', { roomCode: room.code });
+  }
 
   return (
     <div className="game-root">
@@ -25,6 +31,16 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
           <span className="countdown-label">Market opens in</span>
           <span className="countdown-number" key={countdown}>{countdown}</span>
           <span className="countdown-hint">Get ready to trade…</span>
+        </div>
+      )}
+
+      {paused && (
+        <div className="paused-overlay">
+          <span className="paused-icon">⏸</span>
+          <span className="paused-title">Game Paused</span>
+          <span className="paused-hint">
+            {me?.isHost ? 'Tap Resume to continue.' : 'Waiting for the host to resume…'}
+          </span>
         </div>
       )}
       <header className="game-header">
@@ -37,6 +53,11 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
           <span className="game-cash" title="Cash (net worth incl. stocks)">
             ${me?.cash?.toLocaleString()} <span className="game-networth">(${me?.netWorth?.toLocaleString()})</span>
           </span>
+          {canControlPause && (
+            <button className="pause-btn-sm" onClick={togglePause}>
+              {paused ? 'Resume' : 'Pause'}
+            </button>
+          )}
           <button className="leave-btn-sm" onClick={() => setConfirmLeave(true)}>Leave</button>
         </div>
       </header>

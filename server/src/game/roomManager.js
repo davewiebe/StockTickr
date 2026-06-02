@@ -123,7 +123,7 @@ function createRoom(hostSocketId, hostName) {
 
   const room = {
     code,
-    phase: 'lobby',       // 'lobby' | 'countdown' | 'playing' | 'ended'
+    phase: 'lobby',       // 'lobby' | 'countdown' | 'playing' | 'paused' | 'ended'
     players: new Map([[hostSocketId, host]]),
     prices: createInitialPrices(),
     history: [],          // last N roll results
@@ -132,6 +132,7 @@ function createRoom(hostSocketId, hostName) {
       rollIntervalSeconds: DEFAULT_ROLL_INTERVAL_S,
     },
     endsAt: null,         // epoch ms when the game ends (set when dice start)
+    pauseRemainingMs: null, // ms left on the clock while paused
     tickTimer: null,
     countdownTimer: null,
     preRollTimer: null,
@@ -404,7 +405,7 @@ function startPreRoll(room, io) {
   }, 1000);
 }
 
-function startTicker(room, io) {
+function startTicker(room, io, immediate = true) {
   if (room.tickTimer) return;
   const roll = () => {
     if (room.phase !== 'playing') {
@@ -418,8 +419,42 @@ function startTicker(room, io) {
       players: serializePlayers(room),
     });
   };
-  roll(); // fire the first roll immediately when the market opens
+  if (immediate) roll(); // fire the first roll immediately when the market opens
   room.tickTimer = setInterval(roll, room.settings.rollIntervalSeconds * 1000);
+}
+
+// Host-only: pause an in-progress (rolling) game. Freezes dice, trades, and the
+// game-end clock, preserving the remaining time.
+function pauseGame(code, socketId, io) {
+  const room = rooms.get(code);
+  if (!room) return { error: 'Room not found' };
+  if (!room.players.get(socketId)?.isHost) return { error: 'Only the host can pause' };
+  if (room.phase !== 'playing' || !room.endsAt) return { error: 'Nothing to pause' };
+
+  room.pauseRemainingMs = Math.max(0, room.endsAt - Date.now());
+  if (room.endTimer) { clearTimeout(room.endTimer); room.endTimer = null; }
+  stopTicker(room);
+  room.phase = 'paused';
+  room.endsAt = null;
+  io.to(room.code).emit('game:paused', {});
+  return { room };
+}
+
+// Host-only: resume a paused game. Restores the dice and the remaining clock.
+function resumeGame(code, socketId, io) {
+  const room = rooms.get(code);
+  if (!room) return { error: 'Room not found' };
+  if (!room.players.get(socketId)?.isHost) return { error: 'Only the host can resume' };
+  if (room.phase !== 'paused') return { error: 'Game is not paused' };
+
+  const remaining = room.pauseRemainingMs ?? 0;
+  room.pauseRemainingMs = null;
+  room.phase = 'playing';
+  room.endsAt = Date.now() + remaining;
+  io.to(room.code).emit('game:resumed', { endsAt: room.endsAt });
+  startTicker(room, io, false); // don't fire an extra roll on resume
+  room.endTimer = setTimeout(() => endGame(room, io), remaining);
+  return { room };
 }
 
 function stopTicker(room) {
@@ -479,6 +514,8 @@ module.exports = {
   startCountdown,
   startTicker,
   stopTicker,
+  pauseGame,
+  resumeGame,
   endGame,
   serializeRoom,
   serializePlayers,

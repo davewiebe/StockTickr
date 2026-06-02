@@ -10,6 +10,8 @@ const {
   buildTradeCallout,
   getRoom,
   startCountdown,
+  pauseGame,
+  resumeGame,
   serializeRoom,
   serializePlayers,
 } = require('../game/roomManager');
@@ -72,6 +74,20 @@ module.exports = function registerRoomHandlers(io, socket) {
     startCountdown(result.room, io);
     callback({ ok: true });
     console.log(`[room:start] Countdown started in room ${roomCode}`);
+  });
+
+  // Host pauses the game
+  socket.on('room:pause', ({ roomCode }, callback) => {
+    const result = pauseGame(roomCode, socket.id, io);
+    if (result.error) return callback?.({ error: result.error });
+    callback?.({ ok: true });
+  });
+
+  // Host resumes the game
+  socket.on('room:resume', ({ roomCode }, callback) => {
+    const result = resumeGame(roomCode, socket.id, io);
+    if (result.error) return callback?.({ error: result.error });
+    callback?.({ ok: true });
   });
 
   // Buy shares
