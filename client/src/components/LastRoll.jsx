@@ -22,7 +22,9 @@ export default function LastRoll({ roll }) {
   if (!roll) return null;
 
   const meta = META[roll.stockSymbol] || { emoji: '📈', color: '#6366f1' };
-  const pos = roll.split || (!roll.bankrupt && (roll.action.type === 'up' || roll.action.type === 'div'));
+  // A dividend that paid nothing (stock below $100).
+  const noPayout = roll.action.type === 'div' && !roll.dividendPerShare;
+  const pos = roll.split || (!roll.bankrupt && !noPayout && (roll.action.type === 'up' || roll.action.type === 'div'));
   const neg = roll.bankrupt || roll.action.type === 'down';
 
   return (
@@ -30,7 +32,7 @@ export default function LastRoll({ roll }) {
       <span className="lr-label">Latest</span>
       <span className="lr-emoji">{meta.emoji}</span>
       <span className="lr-sym" style={{ color: meta.color }}>{roll.stockSymbol}</span>
-      <span className="lr-action">{actionLabel(roll)}</span>
+      <span className={`lr-action${noPayout ? ' no-payout' : ''}`}>{actionLabel(roll)}</span>
       <span className="lr-price">${roll.newPrice}</span>
     </div>
   );

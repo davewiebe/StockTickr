@@ -23,6 +23,7 @@
 .mp-cell .mp-emoji { font-size: 1.05rem; line-height: 1.1; }
 .mp-cell .mp-sym   { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; color: var(--stock-color); }
 .mp-cell .mp-price { font-size: 0.95rem; font-weight: 700; }
+.mp-cell .mp-price.no-div { color: var(--red); }
 
 .mp-dots {
   display: flex;

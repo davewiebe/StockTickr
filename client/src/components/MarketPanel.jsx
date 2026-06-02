@@ -58,7 +58,12 @@ export default function MarketPanel({ room, me }) {
             >
               <span className="mp-emoji">{emoji}</span>
               <span className="mp-sym">{sym}</span>
-              <span className="mp-price">${room.prices[sym]}</span>
+              <span
+                className={`mp-price${room.prices[sym] < 100 ? ' no-div' : ''}`}
+                title={room.prices[sym] < 100 ? 'Below $100 — pays no dividends' : 'Pays dividends'}
+              >
+                ${room.prices[sym]}
+              </span>
               <span className="mp-dots" title={`${owned} shares owned`} aria-label={`${owned} shares owned`}>
                 {dots > 0
                   ? Array.from({ length: dots }, (_, i) => (

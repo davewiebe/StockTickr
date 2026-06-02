@@ -8,18 +8,21 @@ const ACTION_LABELS = {
 };
 
 function RollItem({ r }) {
+  const noPayout = r.action.type === 'div' && !r.dividendPerShare;
   const label = r.bankrupt
     ? '💀 Bankrupt — shares wiped, reset to $100'
     : r.split
       ? '🎉 Split — shares doubled, reset to $100'
-      : ACTION_LABELS[r.action.type]?.(r.action) || r.action.type;
-  const isPositive = r.split || (!r.bankrupt && ['up', 'div'].includes(r.action.type));
+      : noPayout
+        ? `💰 ${r.action.amount}% Dividend (no payout — below $100)`
+        : ACTION_LABELS[r.action.type]?.(r.action) || r.action.type;
+  const isPositive = r.split || (!r.bankrupt && !noPayout && ['up', 'div'].includes(r.action.type));
   const isNegative = r.bankrupt || r.action.type === 'down';
   return (
     <li className={`roll-item ${isPositive ? 'pos' : isNegative ? 'neg' : ''}`}>
       <span className="roll-tag roll">ROLL</span>
       <span className="roll-stock">{r.stockSymbol}</span>
-      <span className="roll-action">{label}</span>
+      <span className={`roll-action${noPayout ? ' no-payout' : ''}`}>{label}</span>
       <span className="roll-price">${r.newPrice}</span>
     </li>
   );
