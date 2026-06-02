@@ -41,6 +41,9 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, paused,
           <span className="paused-hint">
             {me?.isHost ? 'Tap Resume to continue.' : 'Waiting for the host to resume…'}
           </span>
+          {me?.isHost && (
+            <button className="paused-resume-btn" onClick={togglePause}>Resume</button>
+          )}
         </div>
       )}
       <header className="game-header">

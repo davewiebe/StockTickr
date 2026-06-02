@@ -160,6 +160,7 @@
 .paused-icon  { font-size: 3.5rem; line-height: 1; }
 .paused-title { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.02em; }
 .paused-hint  { font-size: 0.9rem; color: var(--muted); }
+.paused-resume-btn { margin-top: 0.75rem; padding: 0.6rem 2rem; font-weight: 700; }
 
 .game-tabs {
   display: flex;
