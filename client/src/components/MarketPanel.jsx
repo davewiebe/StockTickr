@@ -44,7 +44,7 @@ export default function MarketPanel({ room, me }) {
   // Dividends don't move the price, so watch the latest roll in history instead.
   // `divActive[sym]` is set true only for the duration of the animation, then
   // cleared — otherwise a later price-change re-mount would replay stale coins.
-  const [divActive, setDivActive] = useState({}); // sym -> dividend $/share while animating
+  const [divActive, setDivActive] = useState({}); // sym -> dividend % while animating
   const lastRollTs = useRef(0);
   useEffect(() => {
     const latestRoll = (room.history || []).find(e => (e.type || 'roll') === 'roll');
@@ -52,8 +52,8 @@ export default function MarketPanel({ room, me }) {
     lastRollTs.current = latestRoll.ts;
     if (latestRoll.action?.type === 'div' && latestRoll.dividendPerShare > 0) {
       const sym = latestRoll.stockSymbol;
-      const amount = latestRoll.dividendPerShare;
-      setDivActive(d => ({ ...d, [sym]: amount }));
+      const pct = latestRoll.action.amount; // dividend percentage (5/10/20)
+      setDivActive(d => ({ ...d, [sym]: pct }));
       const t = setTimeout(() => setDivActive(d => ({ ...d, [sym]: 0 })), 1300);
       return () => clearTimeout(t);
     }
@@ -110,7 +110,7 @@ export default function MarketPanel({ room, me }) {
                 <>
                   <span className="mp-coin left" aria-hidden="true">💰</span>
                   <span className="mp-coin right" aria-hidden="true">💰</span>
-                  <span className="mp-div-amount" aria-hidden="true">+${divActive[sym]}</span>
+                  <span className="mp-div-amount" aria-hidden="true">{divActive[sym]}%</span>
                 </>
               ) : null}
               <span className="mp-emoji">{emoji}</span>
