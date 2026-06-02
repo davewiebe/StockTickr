@@ -11,6 +11,7 @@ export default function App() {
   const [countdown, setCountdown] = useState(null); // seconds until market opens, or null
   const [preRoll, setPreRoll] = useState(null);     // seconds until dice start, or null
   const [endsAt, setEndsAt] = useState(null);       // epoch ms the game ends, or null
+  const [paused, setPaused] = useState(false);      // host paused the game
   const [result, setResult] = useState(null);       // { standings, winner } when game ends
   const [callout, setCallout] = useState(null);     // { text, id } latest witty callout
   const [priceHistory, setPriceHistory] = useState([]); // [{prices}] snapshot per roll, index = time
@@ -40,6 +41,16 @@ export default function App() {
 
     socket.on('game:rolling', ({ endsAt }) => {
       setPreRoll(null);
+      setEndsAt(endsAt ?? null);
+    });
+
+    socket.on('game:paused', () => {
+      setPaused(true);
+      setEndsAt(null); // timer is frozen; hide the live countdown while paused
+    });
+
+    socket.on('game:resumed', ({ endsAt }) => {
+      setPaused(false);
       setEndsAt(endsAt ?? null);
     });
 
@@ -103,6 +114,7 @@ export default function App() {
     setCountdown(null);
     setPreRoll(null);
     setEndsAt(null);
+    setPaused(false);
     setResult(null);
     setCallout(null);
     setPriceHistory([]);
@@ -115,7 +127,7 @@ export default function App() {
     <GameRoom
       room={room} me={me}
       countdown={countdown} preRoll={preRoll}
-      endsAt={endsAt} result={result} callout={callout}
+      endsAt={endsAt} paused={paused} result={result} callout={callout}
       priceHistory={priceHistory}
       onLeave={handleLeave}
     />
