@@ -110,7 +110,8 @@ export default function MarketPanel({ room, me }) {
                 <>
                   <span className="mp-coin left" aria-hidden="true">💰</span>
                   <span className="mp-coin right" aria-hidden="true">💰</span>
-                  <span className="mp-div-amount" aria-hidden="true">{divActive[sym]}%</span>
+                  <span className="mp-div-amount left" aria-hidden="true">{divActive[sym]}%</span>
+                  <span className="mp-div-amount right" aria-hidden="true">{divActive[sym]}%</span>
                 </>
               ) : null}
               <span className="mp-emoji">{emoji}</span>
