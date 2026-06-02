@@ -10,8 +10,10 @@ const ACTION_LABELS = {
 function RollItem({ r }) {
   const label = r.bankrupt
     ? '💀 Bankrupt — shares wiped, reset to $100'
-    : ACTION_LABELS[r.action.type]?.(r.action) || r.action.type;
-  const isPositive = !r.bankrupt && ['up', 'div'].includes(r.action.type);
+    : r.split
+      ? '🎉 Split — shares doubled, reset to $100'
+      : ACTION_LABELS[r.action.type]?.(r.action) || r.action.type;
+  const isPositive = r.split || (!r.bankrupt && ['up', 'div'].includes(r.action.type));
   const isNegative = r.bankrupt || r.action.type === 'down';
   return (
     <li className={`roll-item ${isPositive ? 'pos' : isNegative ? 'neg' : ''}`}>

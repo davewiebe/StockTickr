@@ -11,7 +11,7 @@ Real-time multiplayer Stock Ticker game. Single Render service: Express serves t
 - Rooms in-memory (`Map` in roomManager). 4-char codes. Free-tier spin-down wipes active games.
 - Phases: `lobby` → `countdown` (3s) → `playing` (15s frozen pre-roll, then dice tick) → `ended`.
 - Host settings (lobby only, clamped): `durationMinutes` 1–60 (default 5), `rollIntervalSeconds` 1–60 (default 5). Game auto-ends after duration → `game:ended` with sorted standings + winner.
-- 6 stocks: GOLD SILV OIL BOND INDU GRAIN. 18-face action die: per magnitude (5/10/20) = 3 up, 2 down, 1 dividend. No splits/bankrupt face. Stock hitting $0 → shares wiped, resets to par $100.
+- 6 stocks: GOLD SILV OIL BOND INDU GRAIN. 18-face action die: per magnitude (5/10/20) = 3 up, 2 down, 1 dividend. No split/bankrupt die face. Stock hitting $0 → shares wiped, resets to par $100 (`event.bankrupt`). Stock reaching $200 → shares doubled, resets to par $100 (`event.split`).
 - Socket events: `room:create|join|leave|start|updateSettings`, `trade:buy|sell`, server→client `game:started|countdown|open|preroll|rolling|tick|ended|callout|trade`, `room:player*|settingsUpdated`.
 - `room.history` is a mixed, time-ordered (newest-first, cap 50) timeline of `{type:'roll'}` and `{type:'trade'}` entries, each with `ts`. History tab filters by type. LastRoll picks the newest `roll` entry.
 - Game tabs: Market | Charts | History | Scores. Charts = client-side `priceHistory` (snapshot of all prices appended per tick in App.jsx, seeded at `game:open`) rendered as a no-dep multi-line SVG in StockChart.

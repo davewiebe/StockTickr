@@ -11,6 +11,7 @@ const META = {
 
 function actionLabel(r) {
   if (r.bankrupt) return '💀 Bankrupt — reset to $100';
+  if (r.split)    return '🎉 Split — shares doubled, reset to $100';
   if (r.action.type === 'up')   return `▲ +$${r.action.amount}`;
   if (r.action.type === 'down') return `▼ -$${r.action.amount}`;
   if (r.action.type === 'div')  return `💰 ${r.action.amount}% Dividend`;
@@ -21,7 +22,7 @@ export default function LastRoll({ roll }) {
   if (!roll) return null;
 
   const meta = META[roll.stockSymbol] || { emoji: '📈', color: '#6366f1' };
-  const pos = !roll.bankrupt && (roll.action.type === 'up' || roll.action.type === 'div');
+  const pos = roll.split || (!roll.bankrupt && (roll.action.type === 'up' || roll.action.type === 'div'));
   const neg = roll.bankrupt || roll.action.type === 'down';
 
   return (
