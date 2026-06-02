@@ -72,6 +72,20 @@
   100% { opacity: 0; transform: translateY(-26px) scale(1); }
 }
 
+.mp-div-amount {
+  position: absolute;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--green);
+  pointer-events: none;
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  animation: mp-coin-up 1.2s ease-out forwards;
+}
+
 .mp-cell .mp-emoji { font-size: 1.05rem; line-height: 1.1; }
 .mp-cell .mp-sym   { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; color: var(--stock-color); }
 .mp-cell .mp-price { font-size: 0.95rem; font-weight: 700; }
