@@ -124,6 +124,7 @@
   font-size: 1rem;
   color: var(--green);
 }
+.game-networth { color: var(--muted); font-weight: 600; }
 
 .leave-btn-sm {
   background: transparent;
