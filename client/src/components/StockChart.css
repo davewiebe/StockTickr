@@ -1,0 +1,58 @@
+.chart-card { }
+
+.chart-empty { color: var(--muted); font-size: 0.875rem; margin-top: 0.75rem; }
+
+.chart-svg {
+  width: 100%;
+  height: auto;
+  margin-top: 0.75rem;
+  display: block;
+}
+
+.chart-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+.chart-grid.par {
+  stroke: var(--muted);
+  stroke-dasharray: 3 3;
+  opacity: 0.7;
+}
+
+.chart-axis-label {
+  fill: var(--muted);
+  font-size: 8px;
+  font-family: var(--font);
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+}
+.chart-legend-item.off { opacity: 0.4; }
+
+.chart-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.chart-legend-val { color: var(--muted); font-weight: 600; }

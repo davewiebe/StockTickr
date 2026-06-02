@@ -13,6 +13,7 @@ export default function App() {
   const [endsAt, setEndsAt] = useState(null);       // epoch ms the game ends, or null
   const [result, setResult] = useState(null);       // { standings, winner } when game ends
   const [callout, setCallout] = useState(null);     // { text, id } latest witty callout
+  const [priceHistory, setPriceHistory] = useState([]); // [{prices}] snapshot per roll, index = time
 
   useEffect(() => {
     connectSocket();
@@ -29,6 +30,8 @@ export default function App() {
     socket.on('game:open', ({ room }) => {
       setRoom(prev => ({ ...(prev || {}), ...room }));
       setCountdown(null);
+      // Seed the chart with the opening prices as time 0.
+      setPriceHistory(room?.prices ? [{ ...room.prices }] : []);
     });
 
     socket.on('game:preroll', ({ remaining }) => {
@@ -72,6 +75,7 @@ export default function App() {
         return players.find(p => p.socketId === socket.id) || prev;
       });
       if (rollEvent?.callout) setCallout({ text: rollEvent.callout, id: Date.now() });
+      if (prices) setPriceHistory(prev => [...prev, { ...prices }]);
     });
 
     socket.on('game:trade', ({ entry }) => {
@@ -101,6 +105,7 @@ export default function App() {
     setEndsAt(null);
     setResult(null);
     setCallout(null);
+    setPriceHistory([]);
     setScreen('lobby');
   }
 
@@ -111,6 +116,7 @@ export default function App() {
       room={room} me={me}
       countdown={countdown} preRoll={preRoll}
       endsAt={endsAt} result={result} callout={callout}
+      priceHistory={priceHistory}
       onLeave={handleLeave}
     />
   );

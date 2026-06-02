@@ -7,11 +7,12 @@ import RollFeed from './RollFeed';
 import LastRoll from './LastRoll';
 import Callout from './Callout';
 import TradeToasts from './TradeToasts';
+import StockChart from './StockChart';
 import GameOver from './GameOver';
 import './GameRoom.css';
 
-export default function GameRoom({ room, me, countdown, preRoll, endsAt, result, callout, onLeave }) {
-  const [activeTab, setActiveTab] = useState('market'); // 'market' | 'history' | 'scores'
+export default function GameRoom({ room, me, countdown, preRoll, endsAt, result, callout, priceHistory, onLeave }) {
+  const [activeTab, setActiveTab] = useState('market'); // 'market' | 'charts' | 'history' | 'scores'
   const [confirmLeave, setConfirmLeave] = useState(false);
 
   const showCountdown = countdown !== null && countdown !== undefined;
@@ -48,7 +49,7 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
       <Callout callout={callout} />
 
       <div className="game-tabs">
-        {['market', 'history', 'scores'].map(t => (
+        {['market', 'charts', 'history', 'scores'].map(t => (
           <button
             key={t}
             className={`game-tab${activeTab === t ? ' active' : ''}`}
@@ -65,6 +66,9 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, result,
             <MarketPanel room={room} me={me} />
             <Portfolio room={room} me={me} />
           </>
+        )}
+        {activeTab === 'charts' && (
+          <StockChart priceHistory={priceHistory} />
         )}
         {activeTab === 'history' && (
           <RollFeed history={room.history || []} />
