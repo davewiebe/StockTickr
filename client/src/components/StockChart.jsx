@@ -30,12 +30,8 @@ export default function StockChart({ priceHistory }) {
   }
 
   const n = priceHistory.length;
-  // Y axis: fixed 0..max(seen, 100) so the par line is meaningful.
-  let maxVal = 100;
-  for (const snap of priceHistory) {
-    for (const s of STOCKS) maxVal = Math.max(maxVal, snap[s.sym] || 0);
-  }
-  maxVal = Math.ceil(maxVal / 20) * 20; // round up to a clean gridline
+  // Fixed Y axis: $0 at the bottom to $200 at the top, matching the price range.
+  const maxVal = 200;
 
   const x = (i) => PAD.left + (n === 1 ? 0 : (i / (n - 1)) * PLOT_W);
   const y = (v) => PAD.top + PLOT_H - (v / maxVal) * PLOT_H;
@@ -43,9 +39,9 @@ export default function StockChart({ priceHistory }) {
   const lineFor = (sym) =>
     priceHistory.map((snap, i) => `${x(i).toFixed(1)},${y(snap[sym] || 0).toFixed(1)}`).join(' ');
 
-  // Horizontal gridlines every 20% of maxVal.
+  // Horizontal gridlines every $20 from 0 to 200.
   const gridVals = [];
-  for (let v = 0; v <= maxVal; v += maxVal / 5) gridVals.push(Math.round(v));
+  for (let v = 0; v <= maxVal; v += 20) gridVals.push(v);
 
   function toggle(sym) {
     setHidden(prev => {
