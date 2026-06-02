@@ -28,6 +28,14 @@ function bankruptStock(room, symbol) {
   return PAR_PRICE;
 }
 
+// Split a stock: every holder's shares double and the price resets to par.
+function splitStock(room, symbol) {
+  for (const player of room.players.values()) {
+    player.portfolio[symbol] *= 2;
+  }
+  return PAR_PRICE;
+}
+
 // A trade counts as "big" (worth a callout) at or above this dollar value.
 const BIG_TRADE_VALUE = 2000;
 
@@ -48,6 +56,13 @@ function buildRollCallout(room, before, event) {
       `💀 ${worst.name} got wiped out — ${sym} went bankrupt!`,
       `🪦 ${sym} flatlined and took $${Math.abs(worst.delta).toLocaleString()} of ${worst.name}'s fortune with it.`,
       `🔥 ${worst.name} held the bag as ${sym} imploded. Brutal.`,
+    ]);
+  }
+  if (event.split) {
+    return pick([
+      `🎉 ${sym} hit $200 and split — everyone's shares doubled!`,
+      `✂️ ${sym} split 2-for-1! ${best ? `${best.name} is loving it.` : 'Shares doubled, price back to $100.'}`,
+      `🚀 ${sym} mooned past $200 and split — twice the shares, back to par.`,
     ]);
   }
   if (best) {
@@ -237,7 +252,12 @@ function applyRoll(room) {
 
   switch (action.type) {
     case 'up':
-      newPrice = Math.min(MAX_PRICE, currentPrice + action.amount);
+      newPrice = currentPrice + action.amount;
+      if (newPrice >= MAX_PRICE) {
+        // Stock hit $200 — shares split (doubled), price resets to par.
+        newPrice = splitStock(room, stockSymbol);
+        event.split = true;
+      }
       break;
     case 'down':
       newPrice = currentPrice - action.amount;
