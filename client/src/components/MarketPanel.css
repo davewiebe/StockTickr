@@ -20,6 +20,13 @@
   font: inherit;
   transition: border-color 0.12s, box-shadow 0.12s;
 }
+.mp-bump { animation: mp-bump 0.35s ease-out; }
+@keyframes mp-bump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
 .mp-cell .mp-emoji { font-size: 1.05rem; line-height: 1.1; }
 .mp-cell .mp-sym   { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; color: var(--stock-color); }
 .mp-cell .mp-price { font-size: 0.95rem; font-weight: 700; }
