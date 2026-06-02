@@ -32,8 +32,8 @@
    Gains float up (green), losses float down (red). */
 .mp-delta {
   position: absolute;
-  top: 0.35rem;
-  left: 58%;
+  top: 50%;
+  left: 70%;
   font-size: 0.8rem;
   font-weight: 800;
   pointer-events: none;
