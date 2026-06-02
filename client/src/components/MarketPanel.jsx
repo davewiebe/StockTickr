@@ -42,7 +42,9 @@ export default function MarketPanel({ room, me }) {
 
   // When a dividend actually pays out, flutter money icons up the cell.
   // Dividends don't move the price, so watch the latest roll in history instead.
-  const [divBump, setDivBump] = useState({});
+  // `divActive[sym]` is set true only for the duration of the animation, then
+  // cleared — otherwise a later price-change re-mount would replay stale coins.
+  const [divActive, setDivActive] = useState({});
   const lastRollTs = useRef(0);
   useEffect(() => {
     const latestRoll = (room.history || []).find(e => (e.type || 'roll') === 'roll');
@@ -50,7 +52,9 @@ export default function MarketPanel({ room, me }) {
     lastRollTs.current = latestRoll.ts;
     if (latestRoll.action?.type === 'div' && latestRoll.dividendPerShare > 0) {
       const sym = latestRoll.stockSymbol;
-      setDivBump(d => ({ ...d, [sym]: (d[sym] || 0) + 1 }));
+      setDivActive(d => ({ ...d, [sym]: true }));
+      const t = setTimeout(() => setDivActive(d => ({ ...d, [sym]: false })), 1300);
+      return () => clearTimeout(t);
     }
   }, [room.history]);
 
@@ -86,7 +90,7 @@ export default function MarketPanel({ room, me }) {
           const dots = Math.floor(owned / 5);
           return (
             <button
-              key={`${sym}-${bump[sym] || 0}-${divBump[sym] || 0}`}
+              key={`${sym}-${bump[sym] || 0}`}
               type="button"
               className={`mp-cell${selected === sym ? ' selected' : ''}${bump[sym] ? ' mp-bump' : ''}`}
               style={{ '--stock-color': color }}
@@ -101,7 +105,7 @@ export default function MarketPanel({ room, me }) {
                   {delta[sym] > 0 ? '+' : '-'}${Math.abs(delta[sym])}
                 </span>
               ) : null}
-              {divBump[sym] ? (
+              {divActive[sym] ? (
                 <>
                   <span className="mp-coin left" aria-hidden="true">💰</span>
                   <span className="mp-coin right" aria-hidden="true">💰</span>
