@@ -68,19 +68,19 @@ function buildRollCallout(room, before, event) {
   if (best) {
     const amt = Math.round(best.delta).toLocaleString();
     return pick([
-      `🤑 ${best.name} just made $${amt} — ${sym} to the moon!`,
-      `📈 ${best.name} is printing money: +$${amt} on ${sym}!`,
-      `🥂 ${best.name} pockets $${amt}. The ${sym} gods are pleased.`,
-      `🚀 Cha-ching! ${best.name} rides ${sym} for +$${amt}.`,
+      `📈 ${best.name} is up $${amt} — ${sym} to the moon!`,
+      `🤑 ${best.name}'s shares increased by $${amt} on ${sym}!`,
+      `🥂 ${best.name} is up $${amt}. The ${sym} gods are pleased.`,
+      `🚀 ${best.name}'s ${sym} gained $${amt} in value.`,
     ]);
   }
   if (worst) {
     const amt = Math.abs(Math.round(worst.delta)).toLocaleString();
     return pick([
-      `📉 ${worst.name} dropped $${amt} as ${sym} cratered. Oof.`,
-      `🩸 Ouch — ${worst.name} lost $${amt} on ${sym}.`,
-      `🫠 ${worst.name} watched $${amt} evaporate. ${sym}, why?`,
-      `🐻 ${sym} mauled ${worst.name} for $${amt}.`,
+      `📉 ${worst.name} is down $${amt} as ${sym} cratered. Oof.`,
+      `🩸 Ouch — ${worst.name}'s shares dropped $${amt} on ${sym}.`,
+      `🫠 ${worst.name} lost $${amt} as ${sym} slid. Why, ${sym}?`,
+      `🐻 ${sym} dragged ${worst.name} down $${amt}.`,
     ]);
   }
   return null; // nobody held the rolled stock
