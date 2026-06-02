@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { socket } from '../socket';
 import './MarketPanel.css';
 
@@ -16,6 +16,26 @@ export default function MarketPanel({ room, me }) {
   const [selected, setSelected] = useState(null);
   const [qty, setQty] = useState(5);
   const [message, setMessage] = useState(null); // { text, ok }
+
+  // Bump a stock's cell whenever its price changes. `bump[sym]` increments each
+  // change; re-keying the element on that value restarts the CSS animation.
+  const [bump, setBump] = useState({});
+  const prevPrices = useRef(room.prices);
+  useEffect(() => {
+    const prev = prevPrices.current || {};
+    const changed = {};
+    for (const { sym } of STOCKS) {
+      if (room.prices[sym] !== prev[sym]) changed[sym] = true;
+    }
+    if (Object.keys(changed).length) {
+      setBump(b => {
+        const next = { ...b };
+        for (const sym of Object.keys(changed)) next[sym] = (next[sym] || 0) + 1;
+        return next;
+      });
+    }
+    prevPrices.current = room.prices;
+  }, [room.prices]);
 
   const price = selected ? (room.prices[selected] || 0) : 0;
   const held  = selected ? (me?.portfolio?.[selected] || 0) : 0;
@@ -49,9 +69,9 @@ export default function MarketPanel({ room, me }) {
           const dots = Math.floor(owned / 5);
           return (
             <button
-              key={sym}
+              key={`${sym}-${bump[sym] || 0}`}
               type="button"
-              className={`mp-cell${selected === sym ? ' selected' : ''}`}
+              className={`mp-cell${selected === sym ? ' selected' : ''}${bump[sym] ? ' mp-bump' : ''}`}
               style={{ '--stock-color': color }}
               onClick={() => select(sym)}
               aria-pressed={selected === sym}
