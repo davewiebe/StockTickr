@@ -17,15 +17,17 @@ export default function MarketPanel({ room, me }) {
   const [qty, setQty] = useState(5);
   const [message, setMessage] = useState(null); // { text, ok }
 
-  // Bump a stock's cell whenever its price changes. `bump[sym]` increments each
-  // change; re-keying the element on that value restarts the CSS animation.
+  // Bump a stock's cell whenever its price changes, and float a +/-$ delta over
+  // it. `bump[sym]` increments each change so re-keying restarts the animations;
+  // `delta[sym]` holds the price change to display.
   const [bump, setBump] = useState({});
+  const [delta, setDelta] = useState({});
   const prevPrices = useRef(room.prices);
   useEffect(() => {
     const prev = prevPrices.current || {};
     const changed = {};
     for (const { sym } of STOCKS) {
-      if (room.prices[sym] !== prev[sym]) changed[sym] = true;
+      if (room.prices[sym] !== prev[sym]) changed[sym] = room.prices[sym] - prev[sym];
     }
     if (Object.keys(changed).length) {
       setBump(b => {
@@ -33,6 +35,7 @@ export default function MarketPanel({ room, me }) {
         for (const sym of Object.keys(changed)) next[sym] = (next[sym] || 0) + 1;
         return next;
       });
+      setDelta(d => ({ ...d, ...changed }));
     }
     prevPrices.current = room.prices;
   }, [room.prices]);
@@ -76,6 +79,15 @@ export default function MarketPanel({ room, me }) {
               onClick={() => select(sym)}
               aria-pressed={selected === sym}
             >
+              {bump[sym] && delta[sym] ? (
+                <span
+                  key={bump[sym]}
+                  className={`mp-delta${delta[sym] > 0 ? ' up' : ' down'}`}
+                  aria-hidden="true"
+                >
+                  {delta[sym] > 0 ? '+' : '-'}${Math.abs(delta[sym])}
+                </span>
+              ) : null}
               <span className="mp-emoji">{emoji}</span>
               <span className="mp-sym">{sym}</span>
               <span
