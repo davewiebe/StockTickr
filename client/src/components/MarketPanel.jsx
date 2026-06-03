@@ -87,11 +87,16 @@ export default function MarketPanel({ room, me }) {
   const held  = selected ? (me?.portfolio?.[selected] || 0) : 0;
   const cost  = price * qty;
 
+  // Buying caps at what you can afford, so "20" buys fewer if cash is short.
+  const affordable = price > 0 ? Math.floor((me?.cash || 0) / price) : 0;
+  const buyQty = Math.min(qty, affordable);
+  const buyValue = price * buyQty;
+
   // Selling caps at what you actually hold, so "20" sells the rest if you have fewer.
   const sellQty = Math.min(qty, held);
   const sellValue = price * sellQty;
 
-  const cannotBuy  = !selected || cost > (me?.cash || 0);
+  const cannotBuy  = !selected || buyQty <= 0;
   const cannotSell = !selected || held <= 0;
 
   function select(sym) {
@@ -179,9 +184,13 @@ export default function MarketPanel({ room, me }) {
           type="button"
           className="mp-buy"
           disabled={cannotBuy}
-          onClick={() => trade('buy', qty)}
+          onClick={() => trade('buy', buyQty)}
         >
-          {cannotBuy && selected ? 'Not enough cash' : `Buy · $${selected ? cost.toLocaleString() : '—'}`}
+          {cannotBuy && selected
+            ? 'Not enough cash'
+            : buyQty < qty
+              ? `Buy ${buyQty} · $${buyValue.toLocaleString()}`
+              : `Buy · $${selected ? cost.toLocaleString() : '—'}`}
         </button>
         <button
           type="button"
