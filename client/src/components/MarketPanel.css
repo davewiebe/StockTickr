@@ -86,6 +86,32 @@
 .mp-div-amount.left  { left: 0.3rem; }
 .mp-div-amount.right { right: 0.3rem; }
 
+/* "Name +10" trade label on the bottom of the cell: buys up (green), sells down (red). */
+.mp-trade-pop {
+  position: absolute;
+  bottom: 0.2rem;
+  left: 50%;
+  font-size: 0.68rem;
+  font-weight: 800;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.mp-trade-pop.buy  { color: var(--green); animation: mp-trade-up 1.6s ease-out forwards; }
+.mp-trade-pop.sell { color: var(--red);   animation: mp-trade-down 1.6s ease-out forwards; }
+
+@keyframes mp-trade-up {
+  0%   { opacity: 0; transform: translate(-50%, 0); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -34px); }
+}
+@keyframes mp-trade-down {
+  0%   { opacity: 0; transform: translate(-50%, 0); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, 18px); }
+}
+
 .mp-cell .mp-emoji { font-size: 1.05rem; line-height: 1.1; }
 .mp-cell .mp-sym   { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; color: var(--stock-color); }
 .mp-cell .mp-price { font-size: 0.95rem; font-weight: 700; }
