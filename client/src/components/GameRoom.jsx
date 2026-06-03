@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { socket } from '../socket';
 import Leaderboard from './Leaderboard';
 import MarketPanel from './MarketPanel';
@@ -14,11 +14,23 @@ import './GameRoom.css';
 export default function GameRoom({ room, me, countdown, preRoll, endsAt, paused, result, callout, priceHistory, onLeave }) {
   const [activeTab, setActiveTab] = useState('market'); // 'market' | 'charts' | 'history' | 'scores'
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const showCountdown = countdown !== null && countdown !== undefined;
   const showPreRoll = preRoll !== null && preRoll !== undefined;
   // The host can pause once the dice are rolling (endsAt set) or while paused.
   const canControlPause = me?.isHost && (paused || (!!endsAt && !showCountdown && !showPreRoll));
+
+  // Close the menu on any outside click.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onDown(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [menuOpen]);
 
   function togglePause() {
     socket.emit(paused ? 'room:resume' : 'room:pause', { roomCode: room.code });
@@ -56,12 +68,36 @@ export default function GameRoom({ room, me, countdown, preRoll, endsAt, paused,
           <span className="game-cash" title="Cash (net worth incl. stocks)">
             ${me?.cash?.toLocaleString()} <span className="game-networth">(${me?.netWorth?.toLocaleString()})</span>
           </span>
-          {canControlPause && (
-            <button className="pause-btn-sm" onClick={togglePause}>
-              {paused ? 'Resume' : 'Pause'}
+          <div className="game-menu" ref={menuRef}>
+            <button
+              className="game-menu-btn"
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label="Menu"
+              aria-haspopup="true"
+              aria-expanded={menuOpen}
+            >
+              ⋮
             </button>
-          )}
-          <button className="leave-btn-sm" onClick={() => setConfirmLeave(true)}>Leave</button>
+            {menuOpen && (
+              <div className="game-menu-dropdown" role="menu">
+                {canControlPause && (
+                  <button
+                    role="menuitem"
+                    onClick={() => { setMenuOpen(false); togglePause(); }}
+                  >
+                    {paused ? 'Resume' : 'Pause'}
+                  </button>
+                )}
+                <button
+                  role="menuitem"
+                  className="game-menu-danger"
+                  onClick={() => { setMenuOpen(false); setConfirmLeave(true); }}
+                >
+                  Leave
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
