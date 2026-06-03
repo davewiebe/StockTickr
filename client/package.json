@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "react-scripts start",
+    "start": "node scripts/write-build-date.js && react-scripts start",
+    "prebuild": "node scripts/write-build-date.js",
     "build": "react-scripts build",
     "test": "react-scripts test"
   },

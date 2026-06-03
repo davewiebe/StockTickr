@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { socket } from '../socket';
+import { BUILD_DATE } from '../buildInfo';
 import './LobbyScreen.css';
+
+const deployedLabel = BUILD_DATE
+  ? `Last deployed ${new Date(BUILD_DATE).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}`
+  : null;
 
 export default function LobbyScreen({ onJoined }) {
   const [tab, setTab] = useState('create');         // 'create' | 'join'
@@ -88,7 +93,10 @@ export default function LobbyScreen({ onJoined }) {
         </form>
       </div>
 
-      <footer className="lobby-footer">Up to 32 players</footer>
+      <footer className="lobby-footer">
+        Up to 32 players
+        {deployedLabel && <><br />{deployedLabel}</>}
+      </footer>
     </div>
   );
 }
