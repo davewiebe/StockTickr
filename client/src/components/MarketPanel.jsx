@@ -46,16 +46,20 @@ export default function MarketPanel({ room, me }) {
   // cleared — otherwise a later price-change re-mount would replay stale coins.
   const [divActive, setDivActive] = useState({}); // sym -> dividend % while animating
   const lastRollTs = useRef(0);
+  const divTimers = useRef({}); // sym -> reset timeout id (kept out of effect cleanup)
   useEffect(() => {
     const latestRoll = (room.history || []).find(e => (e.type || 'roll') === 'roll');
+    // Dedupe on the roll's timestamp: this effect also fires on trade history
+    // changes, where the newest roll is unchanged — skip those.
     if (!latestRoll || !latestRoll.ts || latestRoll.ts === lastRollTs.current) return;
     lastRollTs.current = latestRoll.ts;
     if (latestRoll.action?.type === 'div' && latestRoll.dividendPerShare > 0) {
       const sym = latestRoll.stockSymbol;
       const pct = latestRoll.action.amount; // dividend percentage (5/10/20)
       setDivActive(d => ({ ...d, [sym]: pct }));
-      const t = setTimeout(() => setDivActive(d => ({ ...d, [sym]: 0 })), 1300);
-      return () => clearTimeout(t);
+      // Track the reset timer in a ref so a later effect re-run can't cancel it.
+      clearTimeout(divTimers.current[sym]);
+      divTimers.current[sym] = setTimeout(() => setDivActive(d => ({ ...d, [sym]: 0 })), 1300);
     }
   }, [room.history]);
 
