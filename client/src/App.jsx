@@ -86,7 +86,19 @@ export default function App() {
         return players.find(p => p.socketId === socket.id) || prev;
       });
       if (rollEvent?.callout) setCallout({ text: rollEvent.callout, id: Date.now() });
-      if (prices) setPriceHistory(prev => [...prev, { ...prices }]);
+      if (prices) {
+        setPriceHistory(prev => {
+          // On a split the server resets the stock to $100 in the same tick, so
+          // the chart never sees the peak. Insert an extra point at the price
+          // that triggered the split (>= $200) before the post-split snapshot.
+          if (rollEvent?.split) {
+            const sym = rollEvent.stockSymbol;
+            const peak = (rollEvent.prevPrice || 0) + (rollEvent.action?.amount || 0);
+            return [...prev, { ...prices, [sym]: peak }, { ...prices }];
+          }
+          return [...prev, { ...prices }];
+        });
+      }
     });
 
     socket.on('game:trade', ({ entry }) => {
