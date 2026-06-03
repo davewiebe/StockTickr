@@ -59,6 +59,26 @@ export default function MarketPanel({ room, me }) {
     }
   }, [room.history]);
 
+  // Float a "Name +10" / "Name -10" label on a stock box when anyone trades it.
+  // Buys float up (green), sells float down (red). Keyed by symbol; each label
+  // has a unique id and auto-removes after its animation.
+  const [tradePops, setTradePops] = useState({}); // sym -> [{ id, text, side }]
+  const popId = useRef(0);
+  useEffect(() => {
+    function onTrade({ entry }) {
+      if (!entry) return;
+      const id = ++popId.current;
+      const sign = entry.side === 'buy' ? '+' : '-';
+      const text = `${entry.playerName} ${sign}${entry.shares}`;
+      setTradePops(p => ({ ...p, [entry.symbol]: [...(p[entry.symbol] || []), { id, text, side: entry.side }] }));
+      setTimeout(() => {
+        setTradePops(p => ({ ...p, [entry.symbol]: (p[entry.symbol] || []).filter(t => t.id !== id) }));
+      }, 1600);
+    }
+    socket.on('game:trade', onTrade);
+    return () => socket.off('game:trade', onTrade);
+  }, []);
+
   const price = selected ? (room.prices[selected] || 0) : 0;
   const held  = selected ? (me?.portfolio?.[selected] || 0) : 0;
   const cost  = price * qty;
@@ -129,6 +149,9 @@ export default function MarketPanel({ room, me }) {
                     ))
                   : <span className="mp-dot-empty" />}
               </span>
+              {(tradePops[sym] || []).map(t => (
+                <span key={t.id} className={`mp-trade-pop ${t.side}`} aria-hidden="true">{t.text}</span>
+              ))}
             </button>
           );
         })}
