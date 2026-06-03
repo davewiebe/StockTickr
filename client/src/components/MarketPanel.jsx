@@ -87,9 +87,10 @@ export default function MarketPanel({ room, me }) {
   const held  = selected ? (me?.portfolio?.[selected] || 0) : 0;
   const cost  = price * qty;
 
-  // Buying caps at what you can afford, so "20" buys fewer if cash is short.
+  // Buying caps at what you can afford, rounded down to a multiple of 5,
+  // so "20" buys 5/10/15 if cash is short rather than an odd amount.
   const affordable = price > 0 ? Math.floor((me?.cash || 0) / price) : 0;
-  const buyQty = Math.min(qty, affordable);
+  const buyQty = Math.min(qty, Math.floor(affordable / 5) * 5);
   const buyValue = price * buyQty;
 
   // Selling caps at what you actually hold, so "20" sells the rest if you have fewer.
