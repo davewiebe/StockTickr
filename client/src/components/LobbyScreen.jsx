@@ -4,7 +4,7 @@ import { BUILD_DATE } from '../buildInfo';
 import './LobbyScreen.css';
 
 const deployedLabel = BUILD_DATE
-  ? `Last deployed ${new Date(BUILD_DATE).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}`
+  ? `Last update: ${BUILD_DATE.slice(0, 10)}`
   : null;
 
 export default function LobbyScreen({ onJoined }) {
@@ -94,8 +94,8 @@ export default function LobbyScreen({ onJoined }) {
       </div>
 
       <footer className="lobby-footer">
-        Up to 32 players
-        {deployedLabel && <><br />{deployedLabel}</>}
+        <span>Up to 32 players</span>
+        {deployedLabel && <span className="lobby-deployed">{deployedLabel}</span>}
       </footer>
     </div>
   );
