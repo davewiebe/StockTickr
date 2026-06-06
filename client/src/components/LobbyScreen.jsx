@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { socket } from '../socket';
-import { BUILD_DATE } from '../buildInfo';
+import buildInfo from '../buildInfo.json';
 import './LobbyScreen.css';
 
-const deployedLabel = BUILD_DATE
-  ? `Last update: ${BUILD_DATE.slice(0, 10)}`
+const buildLabel = buildInfo.date
+  ? `Build ${buildInfo.commit} · ${buildInfo.date}`
   : null;
 
 export default function LobbyScreen({ onJoined }) {
@@ -94,8 +94,7 @@ export default function LobbyScreen({ onJoined }) {
       </div>
 
       <footer className="lobby-footer">
-        <span>Up to 32 players</span>
-        {deployedLabel && <span className="lobby-deployed">{deployedLabel}</span>}
+        {buildLabel && <span className="lobby-deployed">{buildLabel}</span>}
       </footer>
     </div>
   );
